@@ -1,6 +1,7 @@
 import { Component, lazy, Suspense, type ReactNode } from 'react'
 import type { Color } from 'three'
 import { useCubeStore } from './cubeStore.ts'
+import { inputLocked } from './playStore.ts'
 import { useUiStore } from './uiStore.ts'
 
 // three.js and the scene load after the first paint, keeping the first bundle small (NFR-2).
@@ -41,7 +42,7 @@ export function CubeStage({ onGlow }: { onGlow?: (colour: Color) => void }) {
     <div className="relative h-[clamp(380px,70vh,760px)] w-[min(900px,100%)] touch-none">
       <SceneErrorBoundary>
         <Suspense fallback={<Message>Loading the cube…</Message>}>
-          <CubeScene cube={cube} onGlow={onGlow} onReady={setView} />
+          <CubeScene cube={cube} onGlow={onGlow} onReady={setView} inputLocked={inputLocked} />
         </Suspense>
       </SceneErrorBoundary>
     </div>

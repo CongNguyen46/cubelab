@@ -2,12 +2,13 @@ import { useEffect } from 'react'
 import { IDENTITY } from '../engine/index.ts'
 import { useCubeStore } from './cubeStore.ts'
 import { keyMoveToEngine, keyToAction } from './keys.ts'
+import { inputLocked } from './playStore.ts'
 import { useUiStore } from './uiStore.ts'
 
 /**
  * Global keyboard turns (FR-1.3), undo and redo. Keys follow the current view: R turns the face
- * on your right. Ignored while typing in a field, while the menu is open, and while a layer is
- * being dragged.
+ * on your right. Ignored while typing in a field, while the menu is open, while a layer is
+ * being dragged, and while Scramble or Solve plays.
  */
 export function useCubeKeys() {
   useEffect(() => {
@@ -19,7 +20,7 @@ export function useCubeKeys() {
       const action = keyToAction(e)
       if (!action) return
       e.preventDefault()
-      if (ui.view?.isTurning()) return
+      if (ui.view?.isTurning() || inputLocked()) return
       const store = useCubeStore.getState()
       if (action.type === 'move') {
         const view = ui.view?.orientationForInput() ?? IDENTITY
