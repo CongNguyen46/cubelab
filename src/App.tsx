@@ -1,5 +1,6 @@
 import { CubeStage } from './ui/CubeStage.tsx'
 import { Header } from './ui/Header.tsx'
+import { MoveHistory } from './ui/MoveHistory.tsx'
 import { PillButton } from './ui/PillButton.tsx'
 import { ScrambleIcon, SolveIcon, TimerIcon } from './ui/icons.tsx'
 import { useCubeKeys } from './ui/useCubeKeys.ts'
@@ -32,6 +33,7 @@ export function App() {
             Timer
           </PillButton>
         </div>
+        <MoveHistory />
       </main>
     </div>
   )

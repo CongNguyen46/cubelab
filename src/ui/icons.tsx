@@ -42,3 +42,21 @@ export function MenuIcon() {
     </svg>
   )
 }
+
+export function UndoIcon() {
+  return (
+    <svg {...stroke} className="size-[18px]">
+      <path d="M9 14 4 9l5-5" />
+      <path d="M4 9h10a6 6 0 0 1 0 12h-3" />
+    </svg>
+  )
+}
+
+export function ResetIcon() {
+  return (
+    <svg {...stroke} className="size-[18px]">
+      <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+      <path d="M3 3v5h5" />
+    </svg>
+  )
+}
