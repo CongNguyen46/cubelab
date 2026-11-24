@@ -69,3 +69,62 @@
     }
   }
 }
+
+/* Hero, menu and toast, ported from prototype/index.html. */
+@layer components {
+  .hero {
+    --glow: #2fcf5a;
+    --neon-core: #bff5cf;
+    position: relative;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    isolation: isolate;
+  }
+
+  .hero-glow {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: -1;
+    width: min(620px, 90vw);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: var(--glow);
+    opacity: 0.18;
+    filter: blur(90px);
+    pointer-events: none;
+  }
+
+  .led-word {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: -1;
+    width: min(94vw, 1400px);
+    height: auto;
+    overflow: visible;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    user-select: none;
+    animation: led-on 0.9s ease-out both;
+  }
+
+  .led-word text {
+    font-family: var(--font-sans);
+    font-weight: 700;
+  }
+
+  @keyframes led-on {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .led-word {
+      animation: none !important;
+    }
+  }
+}
