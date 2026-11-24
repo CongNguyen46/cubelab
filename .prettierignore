@@ -6,3 +6,4 @@ prototype
 public
 tools
 *.md
+src/solver/vendor
