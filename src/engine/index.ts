@@ -17,3 +17,12 @@ export {
   type MoveBase,
   type MoveGeometry,
 } from './moves.ts'
+export {
+  formatAlg,
+  formatMove,
+  invertAlg,
+  invertMove,
+  ParseError,
+  parseAlg,
+  parseMove,
+} from './notation.ts'
