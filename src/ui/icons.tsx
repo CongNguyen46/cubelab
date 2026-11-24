@@ -60,3 +60,19 @@ export function ResetIcon() {
     </svg>
   )
 }
+
+export function CloseIcon() {
+  return (
+    <svg {...stroke} className="size-6">
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  )
+}
+
+export function ArrowIcon() {
+  return (
+    <svg {...stroke} className="size-[18px] text-text-subtle">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  )
+}

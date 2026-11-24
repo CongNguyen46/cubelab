@@ -1,5 +1,6 @@
 import { Header } from './ui/Header.tsx'
 import { Hero } from './ui/Hero.tsx'
+import { Menu, Toast } from './ui/Menu.tsx'
 import { MoveHistory } from './ui/MoveHistory.tsx'
 import { PillButton } from './ui/PillButton.tsx'
 import { ScrambleIcon, SolveIcon, TimerIcon } from './ui/icons.tsx'
@@ -35,6 +36,8 @@ export function App() {
         </div>
         <MoveHistory />
       </main>
+      <Menu />
+      <Toast />
     </div>
   )
 }
