@@ -16,7 +16,9 @@ describe('moves', () => {
   })
 
   it.each(MOVE_BASES)('%s2 equals %s twice', (base) => {
-    expect(applyMove(solvedState(), m(base, 2))).toEqual(applyAlg(solvedState(), [m(base), m(base)]))
+    expect(applyMove(solvedState(), m(base, 2))).toEqual(
+      applyAlg(solvedState(), [m(base), m(base)]),
+    )
   })
 
   it('R moves the UFR corner to UBR', () => {
@@ -60,7 +62,7 @@ describe('slices and rotations follow the prototype', () => {
     }
   })
 
-  it('x = R M\' L\'', () => {
+  it("x = R M' L'", () => {
     expect(applyMove(solvedState(), m('x'))).toEqual(
       applyAlg(solvedState(), [m('R'), m('M', 3), m('L', 3)]),
     )

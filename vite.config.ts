@@ -39,5 +39,13 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), prototype()],
   test: {
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    coverage: {
+      provider: 'v8',
+      // The gate covers the engine only (NFR-10). Renderer and UI get their own checks.
+      include: ['src/engine/**/*.ts'],
+      exclude: ['src/engine/**/*.test.ts'],
+      reporter: ['text', 'html'],
+      thresholds: { lines: 90, functions: 90, branches: 90, statements: 90 },
+    },
   },
 })

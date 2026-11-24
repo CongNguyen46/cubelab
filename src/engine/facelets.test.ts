@@ -42,7 +42,7 @@ describe('facelets', () => {
   })
 
   it('superflip flips every edge in place', () => {
-    const superflip = 'U R2 F B R B2 R U2 L B2 R U\' D\' R2 F R\' L B2 U2 F2'
+    const superflip = "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2"
     expect(toFacelets(run(superflip))).toBe(
       'UBULURUFURURFRBRDRFUFLFRFDFDFDLDRDBDLULBLFLDLBUBRBLBDB',
     )
@@ -72,9 +72,7 @@ describe('isSolved', () => {
 
   it('is true when a centre has been spun in place', () => {
     const uCentre = cubieId([0, 1, 0])
-    const spun = solvedState().map((c) =>
-      c.id === uCentre ? { ...c, rot: rotation('y', 1) } : c,
-    )
+    const spun = solvedState().map((c) => (c.id === uCentre ? { ...c, rot: rotation('y', 1) } : c))
     expect(isSolved(spun)).toBe(true)
     expect(toFacelets(spun)).toBe(SOLVED)
   })
@@ -98,7 +96,8 @@ describe('isSolved', () => {
     // First two layers untouched.
     const f = spatialFacelets(once)
     expect(f.slice(27, 36)).toBe('DDDDDDDDD')
-    for (const face of [1, 2, 4, 5]) expect(f.slice(face * 9 + 3, face * 9 + 9)).toMatch(/^(.)\1{5}$/)
+    for (const face of [1, 2, 4, 5])
+      expect(f.slice(face * 9 + 3, face * 9 + 9)).toMatch(/^(.)\1{5}$/)
     expect(isSolved(run(tperm, once))).toBe(true)
   })
 })

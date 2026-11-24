@@ -29,7 +29,7 @@ describe('parseAlg', () => {
     expect(formatAlg(parseAlg('R’ X Y Z'))).toBe("R' x y z")
   })
 
-  it('normalises counts: R3 is R\', R2\' is R2, R4 disappears', () => {
+  it("normalises counts: R3 is R', R2' is R2, R4 disappears", () => {
     expect(formatAlg(parseAlg("R3 U2' F5 D4 L"))).toBe("R' U2 F L")
   })
 
