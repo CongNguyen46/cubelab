@@ -33,3 +33,4 @@ export {
   spatialFacelets,
   toFacelets,
 } from './facelets.ts'
+export { createCube, type Cube, type CubeEvent, type Listener, type Step } from './cube.ts'
