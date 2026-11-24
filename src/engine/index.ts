@@ -28,6 +28,7 @@ export {
   parseMove,
 } from './notation.ts'
 export {
+  centreOrientation,
   FACELET_ORDER,
   isSolved,
   normalizeOrientation,
