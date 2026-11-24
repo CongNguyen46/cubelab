@@ -22,6 +22,7 @@ Engine notes:
 
 - `isSolved` is sticker-based: every face one colour. Whole-cube rotations and centres spun in place still count as solved.
 - `toFacelets` normalises orientation first (white centre up, green front), so the URFDLB string is valid for cubejs after x/y/z and slice moves.
+- cubejs returns a solution in that normalised frame. Before animating it (Sprint 2), remap each face letter to the current orientation: replace letter X with the face where the X centre sits now. For example, after `x` the F (green) centre is on top, so a solution move F becomes U. Without this, Solve breaks after any x/y/z or slice move. Test it: scramble, apply `x y` or `M`, solve, and check `isSolved`.
 - With current three.js, set `envMap` on each material. If only `scene.environment` is set, three ignores the per-material `envMapIntensity` and the tiles wash out. Light intensities are the prototype's times PI (legacy to physical units).
 
 ## Decisions that override the requirements doc
