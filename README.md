@@ -4,7 +4,7 @@ A web app for playing, learning and solving the Rubik's cube, with a 3D cube you
 
 The home page has a playable 3D cube with three buttons under it: Scramble, Solve and Timer. Later areas: Cube Builder (rebuild a real cube you are stuck on, then solve it), a beginner layer-by-layer guide, and an Advanced CFOP library.
 
-Status: Sprint 0. The app is a placeholder home page; the cube arrives in Sprint 1.
+Status: Sprint 1. The home page has the 3D cube, turned from the keyboard (R L U D F B, M E S, X Y Z, Shift for prime). Live at https://cubelab-nine.vercel.app.
 
 ## Prototype
 
@@ -27,6 +27,7 @@ Needs Node.js 22 or later.
 npm install
 npm run dev        # local dev server at http://localhost:5173
 npm run test       # Vitest
+npm run test:coverage  # Vitest with the 90% engine coverage gate
 npm run lint       # ESLint and Prettier check
 npm run format     # Prettier, rewrite files
 npm run build      # type check and production build into dist/

@@ -14,7 +14,15 @@ Owner: Cong Bao Nguyen (GitHub `CongNguyen46`). Solo personal project, no deadli
 
 - Requirements and plan: done.
 - Design: done for the homepage. Brand canvas, prototype and Blender model are approved.
-- Code: nothing yet beyond the prototype. Next is **Sprint 0** (see `docs/sprint-0-prompt.md`).
+- Sprint 0 done: scaffold, tokens, CI, Vercel. Production: https://cubelab-nine.vercel.app (prototype at `/prototype/`).
+- Sprint 1 done: cube engine (`src/engine`), R3F renderer driven by the engine (`src/renderer`), keyboard turns, move history, undo and reset on the home page.
+- Next is **Sprint 2**: drag-to-turn, whole-cube drag with settle-to-24, Scramble, solver in a Web Worker, animated Solve, and the hero (LED word, glow, floor reflection).
+
+Engine notes:
+
+- `isSolved` is sticker-based: every face one colour. Whole-cube rotations and centres spun in place still count as solved.
+- `toFacelets` normalises orientation first (white centre up, green front), so the URFDLB string is valid for cubejs after x/y/z and slice moves.
+- With current three.js, set `envMap` on each material. If only `scene.environment` is set, three ignores the per-material `envMapIntensity` and the tiles wash out. Light intensities are the prototype's times PI (legacy to physical units).
 
 ## Decisions that override the requirements doc
 
