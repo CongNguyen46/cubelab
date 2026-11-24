@@ -11,7 +11,7 @@ import {
   type CubeState,
   type Move,
 } from '../engine/index.ts'
-import { TurnAnimator } from './animator.ts'
+import { TurnAnimator, turnDuration } from './animator.ts'
 import { finishTurn, matToQuaternion, startTurn, type CubieView } from './turn.ts'
 
 /** 26 plain objects standing in for the GLB cubies, each with its own starting rotation. */
@@ -163,3 +163,57 @@ describe('TurnAnimator', () => {
     )
   })
 })
+
+describe('backlog speed-up', () => {
+  const quarter = moveGeometry({ base: 'R', turns: 1 })
+  const half = moveGeometry({ base: 'R', turns: 2 })
+
+  it('plays turns at 60% of turnMs when more than 2 are waiting', () => {
+    expect(turnDuration(200, quarter, 1)).toBe(200)
+    expect(turnDuration(200, quarter, 2)).toBe(200)
+    expect(turnDuration(200, quarter, 3)).toBe(120)
+    expect(turnDuration(200, half, 2)).toBe(300)
+    expect(turnDuration(200, half, 5)).toBe(180)
+  })
+
+  it('speeds up a typed burst, then slows back down as the queue drains', () => {
+    const { root, views } = buildScene()
+    const cube = createCube()
+    const anim = new TurnAnimator(root, views, { turnMs: 200 })
+    cube.subscribe((e) => anim.handle(e))
+    for (const m of parseAlg('R U F L')) cube.apply([m])
+
+    // R and U start with 4 and 3 waiting: 120 ms each. F and L start with 2 and 1: 200 ms each.
+    // Step 1 ms at a time and note when each turn finishes.
+    const ends: number[] = []
+    anim.update(0)
+    for (let t = 1; t <= 1000 && anim.busy; t++) {
+      anim.update(t)
+      const finished = 4 - countQueued(anim) - (anim.busy ? 1 : 0)
+      if (finished > ends.length) ends.push(t)
+    }
+    expect(ends).toEqual([120, 240, 440, 640])
+    expectInSync(views, cube.state, 'after burst')
+  })
+
+  it('two waiting turns keep the normal speed', () => {
+    const { root, views } = buildScene()
+    const cube = createCube()
+    const anim = new TurnAnimator(root, views, { turnMs: 200 })
+    cube.subscribe((e) => anim.handle(e))
+    cube.apply(parseAlg('R U'))
+    anim.update(0)
+    anim.update(199)
+    expect(countQueued(anim)).toBe(1)
+    anim.update(200)
+    anim.update(399)
+    expect(anim.busy).toBe(true)
+    anim.update(400)
+    expect(anim.busy).toBe(false)
+  })
+})
+
+/** Turns still queued behind the active one. */
+function countQueued(anim: TurnAnimator): number {
+  return (anim as unknown as { queue: unknown[] }).queue.length
+}

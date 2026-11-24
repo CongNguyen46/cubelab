@@ -12,8 +12,23 @@ import {
 
 type Active = { step: Step; g: MoveGeometry; pivot: Object3D; t0: number; duration: number }
 
+/** With more than this many turns waiting, turns play faster so typing does not lag behind. */
+export const BACKLOG_THRESHOLD = 2
+/** Speed-up for a backlog: each turn takes this share of its normal time. */
+export const BACKLOG_FACTOR = 0.6
+
+/**
+ * How long one turn takes. Half turns take 1.5 times as long. `waiting` counts the turns
+ * queued when this one starts, including itself.
+ */
+export function turnDuration(turnMs: number, g: MoveGeometry, waiting: number): number {
+  const half = Math.abs(g.quarterTurns) === 2 ? 1.5 : 1
+  const backlog = waiting > BACKLOG_THRESHOLD ? BACKLOG_FACTOR : 1
+  return turnMs * half * backlog
+}
+
 export type AnimatorOptions = {
-  /** Milliseconds for a quarter turn. Half turns take 1.5 times as long. */
+  /** Milliseconds for a quarter turn. See turnDuration for half turns and backlogs. */
   turnMs?: number
   /** When true every move lands instantly. */
   reduceMotion?: () => boolean
@@ -60,13 +75,12 @@ export class TurnAnimator {
     // Instant moves can finish several per frame; cap the loop so a long queue never hangs a frame.
     for (let guard = 0; guard < 64; guard++) {
       if (!this.active) {
+        const waiting = this.queue.length
         const step = this.queue.shift()
         if (!step) return
         const g = moveGeometry(step.move)
         const objects = [...this.views.values()].map((v) => v.object)
-        const duration = this.reduceMotion()
-          ? 0
-          : this.turnMs * (Math.abs(g.quarterTurns) === 2 ? 1.5 : 1)
+        const duration = this.reduceMotion() ? 0 : turnDuration(this.turnMs, g, waiting)
         this.active = { step, g, pivot: startTurn(this.root, objects, g), t0: now, duration }
       }
       const a = this.active
