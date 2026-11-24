@@ -12,3 +12,4 @@ export {
   type TimerResult,
   type TimerState,
 } from './machine.ts'
+export { createTimerStore, useTimerStore } from './store.ts'
