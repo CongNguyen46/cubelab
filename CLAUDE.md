@@ -18,7 +18,8 @@ Owner: Cong Bao Nguyen (GitHub `CongNguyen46`). Solo personal project, no deadli
 - Sprint 1 done: cube engine (`src/engine`), R3F renderer driven by the engine (`src/renderer`), keyboard turns, move history, undo and reset on the home page.
 - Sprint 2a done: drag-to-turn, whole-cube drag with settle-to-24, auto-spin, double-click reset, hero (LED word, glow, floor reflection, shadow), full-screen menu.
 - Sprint 2b done: two-phase solver (vendored cubejs) in a Web Worker, Scramble and animated Solve with the loading-to-done button. **Milestone: core MVP.**
-- Next is **Sprint 3**: inline timer, inspection and penalties, session stats, local storage.
+- Sprint 3a done: inline timer (state machine in `src/timer`), Space, Timer button, Esc, touch pad, input locks.
+- Next is **Sprint 3b**: inspection, new scramble after each solve, session panel, Dexie storage.
 
 Engine notes:
 
@@ -34,6 +35,13 @@ Solver notes:
 - Two-phase is not optimal near solved (a single R gets 8 moves), so Solve plays the shorter of the solver answer and the undone history. History always starts from solved.
 - Scramble resets the cube to solved and eases the view home first, so the scramble text reproduces the state on screen.
 - `npm run test:slow` runs the 1,000-state FR-3 acceptance (about 100 s). CI runs it on pushes to main only; normal runs check 200 states.
+
+Timer notes:
+
+- `src/timer/machine.ts` is a pure reducer ported from the prototype; the store stamps events with `performance.now()` and schedules the 150 ms and 400 ms ticks.
+- Space is handled in the capture phase and always `preventDefault`ed, so it never scrolls, clicks a focused button or reaches the cube keys.
+- `inputLocked(pointerType?)` in `ui/playStore.ts` is the one lock: Scramble/Solve playing or the timer held/running locks keys, drags, undo, reset and the menu. While the digits show, touch on the cube area belongs to the timer; mouse still turns the cube.
+- Esc while running discards the solve (no result).
 
 View and input notes:
 
