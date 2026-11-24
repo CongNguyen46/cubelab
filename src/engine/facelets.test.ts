@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { isSolved, normalizeOrientation, spatialFacelets, toFacelets } from './facelets.ts'
+import {
+  centreOrientation,
+  isSolved,
+  normalizeOrientation,
+  spatialFacelets,
+  toFacelets,
+} from './facelets.ts'
 import { rotation } from './math.ts'
 import { applyAlg } from './moves.ts'
 import { parseAlg } from './notation.ts'
@@ -107,5 +113,25 @@ describe('normalizeOrientation', () => {
     const s = normalizeOrientation(run("x y' R M"))
     expect(s.find((c) => c.id === cubieId([0, 1, 0]))!.pos).toEqual([0, 1, 0])
     expect(s.find((c) => c.id === cubieId([0, 0, 1]))!.pos).toEqual([0, 0, 1])
+  })
+})
+
+describe('centreOrientation', () => {
+  it('is the identity until the cube is rotated or slice-turned', () => {
+    expect(centreOrientation(solvedState())).toEqual(rotation('x', 0))
+    expect(centreOrientation(run("R U F' L2 D B'"))).toEqual(rotation('x', 0))
+  })
+
+  it('matches the rotation an x, y or z applied', () => {
+    expect(centreOrientation(run('x'))).toEqual(rotation('x', -1))
+    expect(centreOrientation(run("y'"))).toEqual(rotation('y', 1))
+    expect(centreOrientation(run('z2'))).toEqual(rotation('z', 2))
+  })
+
+  it('tracks slice moves, which carry the centres with them', () => {
+    // M turns like L, so the centres move like x'.
+    expect(centreOrientation(run('M'))).toEqual(centreOrientation(run("x'")))
+    expect(centreOrientation(run('E'))).toEqual(centreOrientation(run("y'")))
+    expect(centreOrientation(run('S'))).toEqual(centreOrientation(run('z')))
   })
 })

@@ -57,6 +57,7 @@ export class ViewController {
   private dragging = false
   private readonly reduceMotion: () => boolean
   private readonly tmp = new Quaternion()
+  private settledWaiters: (() => void)[] = []
 
   constructor(options: { reduceMotion?: () => boolean } = {}) {
     this.reduceMotion = options.reduceMotion ?? (() => false)
@@ -92,11 +93,20 @@ export class ViewController {
     this.settle()
   }
 
-  /** Ease back to the starting view: white up, green front. */
-  reset() {
+  /** Ease back to the starting view: white up, green front. Resolves once it is there. */
+  reset(): Promise<void> {
     this.autoSpin = false
+    this.dragging = false
     this.settleTarget = new Quaternion()
+    const settled = this.whenSettled()
     if (this.reduceMotion()) this.update(0)
+    return settled
+  }
+
+  /** Resolves when the view is upright and still (at once if it already is). */
+  whenSettled(): Promise<void> {
+    if (this.settled) return Promise.resolve()
+    return new Promise((resolve) => this.settledWaiters.push(resolve))
   }
 
   private settle() {
@@ -126,6 +136,9 @@ export class ViewController {
     if (this.group.quaternion.angleTo(this.settleTarget) < 0.002) {
       this.group.quaternion.copy(this.settleTarget)
       this.settleTarget = null
+      const waiters = this.settledWaiters
+      this.settledWaiters = []
+      for (const w of waiters) w()
     }
   }
 

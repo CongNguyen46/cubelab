@@ -39,9 +39,13 @@ export type AnimatorOptions = {
  * like: after each turn it places every cubie from the engine state that came with that move.
  */
 export class TurnAnimator {
-  /** Queued steps. `shown` steps were already animated by the view (a drag): they only sync. */
-  private queue: { step: Step; shown: boolean }[] = []
+  /**
+   * Queued steps. `shown` steps were already animated by the view (a drag): they only sync.
+   * `tempo` is a set pace in ms per quarter turn (Scramble, Solve), else the normal timing.
+   */
+  private queue: { step: Step; shown: boolean; tempo?: number }[] = []
   private active: Active | null = null
+  private idleWaiters: (() => void)[] = []
   private readonly root: Object3D
   private readonly views: ReadonlyMap<number, CubieView>
   turnMs: number
@@ -73,11 +77,31 @@ export class TurnAnimator {
       for (const step of event.steps) syncToState(this.views, step.state)
       return
     }
-    this.queue.push(...event.steps.map((step) => ({ step, shown: event.animated })))
+    this.queue.push(
+      ...event.steps.map((step) => ({ step, shown: event.animated, tempo: event.tempo })),
+    )
+  }
+
+  /** Resolves once every queued turn has finished (at once if nothing is playing). */
+  whenIdle(): Promise<void> {
+    if (!this.busy) return Promise.resolve()
+    return new Promise((resolve) => this.idleWaiters.push(resolve))
+  }
+
+  /** Jump to the end: finish the current turn and land on the last queued state. */
+  skip() {
+    const last = this.queue.at(-1)?.step ?? this.active?.step
+    this.cancel()
+    if (last) syncToState(this.views, last.state)
   }
 
   /** Advance the animation. `now` is in milliseconds, for example from performance.now(). */
   update(now: number) {
+    this.advance(now)
+    if (!this.busy) this.notifyIdle()
+  }
+
+  private advance(now: number) {
     // Instant moves can finish several per frame; cap the loop so a long queue never hangs a frame.
     for (let guard = 0; guard < 64; guard++) {
       if (!this.active) {
@@ -91,7 +115,11 @@ export class TurnAnimator {
         }
         const g = moveGeometry(step.move)
         const objects = [...this.views.values()].map((v) => v.object)
-        const duration = this.reduceMotion() ? 0 : turnDuration(this.turnMs, g, waiting)
+        const duration = this.reduceMotion()
+          ? 0
+          : next.tempo
+            ? next.tempo * (Math.abs(g.quarterTurns) === 2 ? 1.5 : 1)
+            : turnDuration(this.turnMs, g, waiting)
         this.active = { step, g, pivot: startTurn(this.root, objects, g), t0: now, duration }
       }
       const a = this.active
@@ -106,6 +134,12 @@ export class TurnAnimator {
     }
   }
 
+  private notifyIdle() {
+    const waiters = this.idleWaiters
+    this.idleWaiters = []
+    for (const w of waiters) w()
+  }
+
   /** Drop queued moves and put any cubies in mid-turn back under the root. */
   cancel() {
     this.queue = []
@@ -113,5 +147,6 @@ export class TurnAnimator {
       finishTurn(this.root, this.active.pivot, this.active.g)
       this.active = null
     }
+    this.notifyIdle()
   }
 }

@@ -17,7 +17,8 @@ Owner: Cong Bao Nguyen (GitHub `CongNguyen46`). Solo personal project, no deadli
 - Sprint 0 done: scaffold, tokens, CI, Vercel. Production: https://cubelab-nine.vercel.app (prototype at `/prototype/`).
 - Sprint 1 done: cube engine (`src/engine`), R3F renderer driven by the engine (`src/renderer`), keyboard turns, move history, undo and reset on the home page.
 - Sprint 2a done: drag-to-turn, whole-cube drag with settle-to-24, auto-spin, double-click reset, hero (LED word, glow, floor reflection, shadow), full-screen menu.
-- Next is **Sprint 2b**: solver in a Web Worker (vendored cubejs), Scramble and animated Solve.
+- Sprint 2b done: two-phase solver (vendored cubejs) in a Web Worker, Scramble and animated Solve with the loading-to-done button. **Milestone: core MVP.**
+- Next is **Sprint 3**: inline timer, inspection and penalties, session stats, local storage.
 
 Engine notes:
 
@@ -25,6 +26,14 @@ Engine notes:
 - `toFacelets` normalises orientation first (white centre up, green front), so the URFDLB string is valid for cubejs after x/y/z and slice moves.
 - cubejs returns a solution in that normalised frame. Before animating it (Sprint 2), remap each face letter to the current orientation: replace letter X with the face where the X centre sits now. For example, after `x` the F (green) centre is on top, so a solution move F becomes U. Without this, Solve breaks after any x/y/z or slice move. Test it: scramble, apply `x y` or `M`, solve, and check `isSolved`.
 - `remapMove(move, m)` renames a move between frames (one of the 24 rotations). It serves the keyboard, history labels and the solver remap.
+
+Solver notes:
+
+- cubejs 1.3.2 is vendored in `src/solver/vendor/` (its npm package depends on npm@6). See the README there for the three ES-module patches. Excluded from lint, Prettier and coverage.
+- The page imports only `solver/client.ts` and `solver/shorter.ts`. Importing `solver/core.ts` or `solver/index.ts` from page code would pull the solver into the first bundle.
+- Two-phase is not optimal near solved (a single R gets 8 moves), so Solve plays the shorter of the solver answer and the undone history. History always starts from solved.
+- Scramble resets the cube to solved and eases the view home first, so the scramble text reproduces the state on screen.
+- `npm run test:slow` runs the 1,000-state FR-3 acceptance (about 100 s). CI runs it on pushes to main only; normal runs check 200 states.
 
 View and input notes:
 
@@ -87,6 +96,10 @@ src/
 
 Modules talk through small typed interfaces. Keep `engine/` free of UI imports so it stays easy to test.
 
+## Known issues
+
+- On Windows, a Vitest run started right after a command rewrites test files can fail every suite with "Cannot read properties of undefined (reading 'config')". Running it again passes. Not seen in CI.
+
 ## Rules
 
 - Style for any text written to the user or in the UI: concise, plain, no em dashes.
@@ -105,5 +118,6 @@ npm install
 npm run dev        # local dev server
 npm run test       # Vitest
 npm run lint
+npm run test:slow  # 1,000-state solver acceptance, about 100 s
 npm run build
 ```

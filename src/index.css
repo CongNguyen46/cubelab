@@ -187,3 +187,200 @@
     }
   }
 }
+
+/* Solve button: loading-to-done, from the prototype (Lucian UX/UI Prompt #438, MIT, Seokwoooo). */
+@layer components {
+  .solve-btn {
+    --w: auto;
+    --k: 1;
+    position: relative;
+    display: inline-flex;
+    min-height: 52px;
+    width: var(--w);
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--color-accent);
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.25) inset,
+      0 10px 24px -12px var(--color-accent),
+      0 2px 4px -2px rgb(0 0 0 / 0.5);
+    transform: scale(var(--k));
+    transition:
+      width 0.46s cubic-bezier(0.65, 0, 0.35, 1),
+      background-color 0.35s var(--ease-lab),
+      border-color 0.35s var(--ease-lab),
+      box-shadow 0.3s var(--ease-lab),
+      transform 0.5s cubic-bezier(0.34, 1.7, 0.5, 1),
+      opacity 0.2s;
+  }
+
+  .solve-btn[data-s='idle']:not(:disabled):hover {
+    --k: 1.02;
+    background: var(--color-accent-hover);
+  }
+
+  .solve-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+    transform: none;
+  }
+
+  .solve-btn.is-down {
+    --k: 0.93;
+    transition:
+      width 0.46s cubic-bezier(0.65, 0, 0.35, 1),
+      background-color 0.35s var(--ease-lab),
+      box-shadow 0.3s var(--ease-lab),
+      transform 0.12s var(--ease-lab);
+  }
+
+  .solve-btn.is-grow {
+    transition:
+      width 0.62s cubic-bezier(0.34, 1.32, 0.5, 1),
+      background-color 0.35s var(--ease-lab),
+      border-color 0.35s var(--ease-lab),
+      box-shadow 0.3s var(--ease-lab),
+      transform 0.5s cubic-bezier(0.34, 1.7, 0.5, 1);
+  }
+
+  .solve-btn .sl {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0 28px;
+    white-space: nowrap;
+    transition:
+      opacity 0.22s var(--ease-lab),
+      filter 0.22s var(--ease-lab),
+      transform 0.3s var(--ease-lab);
+  }
+
+  .solve-btn[data-s='busy'] .sl,
+  .solve-btn[data-s='ok'] .sl {
+    opacity: 0;
+    filter: blur(4px);
+    transform: scale(0.9);
+  }
+
+  .solve-btn[data-s='idle'].is-grow .sl {
+    transition-delay: 0.16s;
+  }
+
+  .solve-btn .ssp,
+  .solve-btn .sck {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    opacity: 0;
+    transform: scale(0.4);
+    transition:
+      opacity 0.2s var(--ease-lab),
+      transform 0.4s cubic-bezier(0.34, 1.6, 0.5, 1);
+    pointer-events: none;
+  }
+
+  .solve-btn .ssp {
+    border: 2.5px solid rgb(22 9 3 / 0.28);
+    border-top-color: var(--color-on-accent);
+    border-radius: 50%;
+    animation: solve-spin 0.75s linear infinite;
+  }
+
+  .solve-btn[data-s='busy'] .ssp {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.22s;
+  }
+
+  .solve-btn .sck {
+    fill: none;
+    stroke: #06281c;
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .solve-btn .sck path {
+    stroke-dasharray: 20;
+    stroke-dashoffset: 20;
+    transition: stroke-dashoffset 0.38s var(--ease-lab) 0.12s;
+  }
+
+  .solve-btn[data-s='ok'] {
+    border-color: var(--color-success);
+    background: var(--color-success);
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.25) inset,
+      0 10px 24px -12px var(--color-success),
+      0 2px 4px -2px rgb(0 0 0 / 0.5);
+    animation: solve-pop 0.5s cubic-bezier(0.34, 1.7, 0.5, 1);
+  }
+
+  .solve-btn[data-s='ok'] .sck {
+    opacity: 1;
+    transform: none;
+  }
+
+  .solve-btn[data-s='ok'] .sck path {
+    stroke-dashoffset: 0;
+  }
+
+  .solve-btn .sring {
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    box-shadow: 0 0 0 2px var(--color-success);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .solve-btn[data-s='ok'] .sring {
+    animation: solve-ring 0.7s var(--ease-lab) 0.1s;
+  }
+
+  @keyframes solve-spin {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  @keyframes solve-pop {
+    40% {
+      transform: scale(1.12);
+    }
+  }
+
+  @keyframes solve-ring {
+    0% {
+      opacity: 0.7;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.7);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .solve-btn,
+    .solve-btn * {
+      animation: none !important;
+      transition: none !important;
+    }
+    /* A still spinner: one dark quarter instead of a rotating one. */
+    .solve-btn .ssp {
+      border-top-color: rgb(22 9 3 / 0.28);
+      border-right-color: var(--color-on-accent);
+    }
+  }
+}

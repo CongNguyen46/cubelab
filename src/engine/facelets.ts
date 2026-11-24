@@ -1,4 +1,13 @@
-import { cross, fromColumns, mulMat, mulVec, transpose, vecEquals, type Vec3 } from './math.ts'
+import {
+  cross,
+  fromColumns,
+  mulMat,
+  mulVec,
+  transpose,
+  vecEquals,
+  type Mat3,
+  type Vec3,
+} from './math.ts'
 import { cubieId, type CubeState } from './state.ts'
 
 /** Facelet face letters in the order cubejs (Kociemba) expects. */
@@ -52,15 +61,25 @@ export function spatialFacelets(state: CubeState): string {
 }
 
 /**
+ * Where the centres sit now, as a rotation from the home frame: column x is where the R centre
+ * is, column y the U centre, column z the F centre. The identity for a cube that has not been
+ * rotated (x, y, z) or slice-turned (M, E, S).
+ *
+ * A solution computed in the normalised frame (white up, green front) is turned into moves for
+ * the current cube with remapMove(move, centreOrientation(state)).
+ */
+export function centreOrientation(state: CubeState): Mat3 {
+  const u = state.find((c) => c.id === cubieId(NORMAL.U))!.pos
+  const f = state.find((c) => c.id === cubieId(NORMAL.F))!.pos
+  return fromColumns(cross(u, f), u, f)
+}
+
+/**
  * Turn the whole cube so the U centre is back on top and the F centre is in front, without
  * changing which pieces are where relative to each other. Centres spun in place stay spun.
  */
 export function normalizeOrientation(state: CubeState): CubeState {
-  const u = state.find((c) => c.id === cubieId(NORMAL.U))!.pos
-  const f = state.find((c) => c.id === cubieId(NORMAL.F))!.pos
-  // g maps home axes to where the centres are now (columns: x, y, z images). Undo it.
-  const g = fromColumns(cross(u, f), u, f)
-  const back = transpose(g)
+  const back = transpose(centreOrientation(state))
   return state.map((c) => ({ ...c, pos: mulVec(back, c.pos), rot: mulMat(back, c.rot) }))
 }
 

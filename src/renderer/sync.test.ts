@@ -244,3 +244,72 @@ describe('moves the view already animated', () => {
     expectInSync(views, cube.state, 'after F then shown R')
   })
 })
+
+describe('playback: tempo, skip and idle', () => {
+  it('plays moves at a set tempo, with half turns 1.5 times as long and no backlog speed-up', () => {
+    const { root, views } = buildScene()
+    const cube = createCube()
+    const anim = new TurnAnimator(root, views, { turnMs: 200 })
+    cube.subscribe((e) => anim.handle(e))
+    cube.apply(parseAlg('R U2 F L'), { tempo: 100 })
+    anim.update(0)
+    anim.update(99)
+    expect(countQueued(anim)).toBe(3)
+    anim.update(100) // R done, U2 starts
+    anim.update(249)
+    expect(countQueued(anim)).toBe(2)
+    anim.update(250) // U2 done after 150 ms
+    expect(countQueued(anim)).toBe(1)
+    anim.update(350)
+    anim.update(450)
+    expect(anim.busy).toBe(false)
+    expectInSync(views, cube.state, 'after tempo')
+  })
+
+  it('skip lands on the final state at once', async () => {
+    const { root, views } = buildScene()
+    const cube = createCube()
+    const anim = new TurnAnimator(root, views)
+    cube.subscribe((e) => anim.handle(e))
+    cube.apply(parseAlg("R U R' U' M2 x F"), { tempo: 120 })
+    anim.update(0)
+    anim.update(50)
+    const idle = anim.whenIdle()
+    anim.skip()
+    expect(anim.busy).toBe(false)
+    expect(root.children.length).toBe(26)
+    expectInSync(views, cube.state, 'after skip')
+    await idle
+  })
+
+  it('whenIdle resolves after the last turn, and at once when nothing plays', async () => {
+    const { root, views } = buildScene()
+    const cube = createCube()
+    const anim = new TurnAnimator(root, views, { turnMs: 100 })
+    cube.subscribe((e) => anim.handle(e))
+    await anim.whenIdle()
+    cube.apply(parseAlg('R U'))
+    let done = false
+    void anim.whenIdle().then(() => (done = true))
+    anim.update(0)
+    anim.update(100)
+    await Promise.resolve()
+    expect(done).toBe(false)
+    anim.update(200)
+    await Promise.resolve()
+    expect(done).toBe(true)
+  })
+
+  it('reset also releases anyone waiting for idle', async () => {
+    const { root, views } = buildScene()
+    const cube = createCube()
+    const anim = new TurnAnimator(root, views)
+    cube.subscribe((e) => anim.handle(e))
+    cube.apply(parseAlg('R U F'))
+    anim.update(0)
+    const idle = anim.whenIdle()
+    cube.reset()
+    await idle
+    expectInSync(views, cube.state, 'after reset')
+  })
+})

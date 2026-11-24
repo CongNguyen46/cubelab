@@ -179,3 +179,30 @@ describe('glow', () => {
     expect(glow.face).toBe(5)
   })
 })
+
+describe('ViewController.reset as a promise', () => {
+  it('resolves once the view is back at the start', async () => {
+    const view = new ViewController()
+    view.beginDrag()
+    view.dragBy(deg(120) / SPIN_PER_PIXEL, 0, RIGHT)
+    view.endDrag()
+    let done = false
+    const p = view.reset().then(() => (done = true))
+    view.update(1 / 60)
+    await Promise.resolve()
+    expect(done).toBe(false)
+    for (let i = 0; i < 300 && !view.settled; i++) view.update(1 / 60)
+    await p
+    expect(quaternionToMat3(view.group.quaternion)).toEqual(IDENTITY)
+  })
+
+  it('resolves at once with reduced motion, and whenSettled resolves at once when still', async () => {
+    const view = new ViewController({ reduceMotion: () => true })
+    await view.whenSettled()
+    view.beginDrag()
+    view.dragBy(deg(-200) / SPIN_PER_PIXEL, 0, RIGHT)
+    await view.reset()
+    expect(view.settled).toBe(true)
+    expect(quaternionToMat3(view.group.quaternion)).toEqual(IDENTITY)
+  })
+})

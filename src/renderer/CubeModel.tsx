@@ -20,8 +20,12 @@ export type CubeViewHandle = {
   orientationForInput(): Mat3
   /** A layer is being dragged or snapping: keyboard turns should wait. */
   isTurning(): boolean
-  /** Ease back to the starting view (white up, green front). */
-  resetView(): void
+  /** Ease back to the starting view (white up, green front). Resolves once it is there. */
+  resetView(): Promise<void>
+  /** Resolves when every queued turn has played. */
+  whenIdle(): Promise<void>
+  /** Jump to the end of whatever is playing. */
+  skip(): void
 }
 
 /**
@@ -53,9 +57,11 @@ type Props = {
   onGlow?: (colour: Color) => void
   /** Called once the cube is ready, with the handle the page uses for input. */
   onReady?: (handle: CubeViewHandle | null) => void
+  /** True while Scramble or Solve is playing: pointer input is ignored. */
+  inputLocked?: () => boolean
 }
 
-export function CubeModel({ cube, turnMs = 200, onGlow, onReady }: Props) {
+export function CubeModel({ cube, turnMs = 200, onGlow, onReady, inputLocked }: Props) {
   const { scene } = useGLTF(MODEL_URL)
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
@@ -89,8 +95,9 @@ export function CubeModel({ cube, turnMs = 200, onGlow, onReady }: Props) {
         animator,
         cube,
         reduceMotion,
+        inputLocked,
       }),
-    [gl, camera, view, root, views, animator, cube],
+    [gl, camera, view, root, views, animator, cube, inputLocked],
   )
   useEffect(() => interaction.attach(), [interaction])
 
@@ -99,9 +106,11 @@ export function CubeModel({ cube, turnMs = 200, onGlow, onReady }: Props) {
       orientationForInput: () => view.orientationForInput(),
       isTurning: () => interaction.turning,
       resetView: () => view.reset(),
+      whenIdle: () => animator.whenIdle(),
+      skip: () => animator.skip(),
     })
     return () => onReady?.(null)
-  }, [onReady, view, interaction])
+  }, [onReady, view, interaction, animator])
 
   useFrame((state, dt) => {
     const now = performance.now()

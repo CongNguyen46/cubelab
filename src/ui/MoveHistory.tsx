@@ -1,5 +1,6 @@
 import { useCubeStore } from './cubeStore.ts'
 import { ResetIcon, UndoIcon } from './icons.tsx'
+import { inputLocked, usePlayStore } from './playStore.ts'
 import { useUiStore } from './uiStore.ts'
 
 const SHOWN = 10
@@ -14,9 +15,15 @@ export function MoveHistory() {
   const undoMove = useCubeStore((s) => s.undo)
   const resetCube = useCubeStore((s) => s.reset)
   // Wait for a dragged layer to land before changing the cube.
-  const idle = () => !useUiStore.getState().view?.isTurning()
+  const idle = () => !useUiStore.getState().view?.isTurning() && !inputLocked()
+  const playing = usePlayStore((s) => s.mode !== 'idle')
+  const clearLine = usePlayStore((s) => s.clearLine)
   const undo = () => idle() && undoMove()
-  const reset = () => idle() && resetCube()
+  const reset = () => {
+    if (!idle()) return
+    resetCube()
+    clearLine()
+  }
   const shown = history.slice(-SHOWN)
   const offset = history.length - shown.length
 
@@ -48,12 +55,18 @@ export function MoveHistory() {
             type="button"
             className={iconButton}
             onClick={undo}
-            disabled={!canUndo}
+            disabled={!canUndo || playing}
             aria-label="Undo last move"
           >
             <UndoIcon />
           </button>
-          <button type="button" className={iconButton} onClick={reset} aria-label="Reset to solved">
+          <button
+            type="button"
+            className={iconButton}
+            onClick={reset}
+            disabled={playing}
+            aria-label="Reset to solved"
+          >
             <ResetIcon />
           </button>
         </>
