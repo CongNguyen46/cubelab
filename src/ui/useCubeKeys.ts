@@ -1,19 +1,31 @@
 import { useEffect } from 'react'
+import { IDENTITY } from '../engine/index.ts'
 import { useCubeStore } from './cubeStore.ts'
-import { keyToAction } from './keys.ts'
+import { keyMoveToEngine, keyToAction } from './keys.ts'
+import { useUiStore } from './uiStore.ts'
 
-/** Global keyboard turns (FR-1.3), undo and redo. Ignored while typing in a field. */
+/**
+ * Global keyboard turns (FR-1.3), undo and redo. Keys follow the current view: R turns the face
+ * on your right. Ignored while typing in a field, while the menu is open, and while a layer is
+ * being dragged.
+ */
 export function useCubeKeys() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null
       if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+      const ui = useUiStore.getState()
+      if (ui.menuOpen) return
       const action = keyToAction(e)
       if (!action) return
       e.preventDefault()
+      if (ui.view?.isTurning()) return
       const store = useCubeStore.getState()
-      if (action.type === 'move') store.apply([action.move])
-      else if (action.type === 'undo') store.undo()
+      if (action.type === 'move') {
+        const view = ui.view?.orientationForInput() ?? IDENTITY
+        const { move, label } = keyMoveToEngine(action.move, view)
+        store.apply([move], { labels: [label] })
+      } else if (action.type === 'undo') store.undo()
       else store.redo()
     }
     window.addEventListener('keydown', onKey)
