@@ -37,9 +37,10 @@ type Props = {
   /** Glow colour every frame, for the page's CSS glow and LED word. */
   onGlow?: (colour: Color) => void
   onReady?: (handle: CubeViewHandle | null) => void
+  inputLocked?: () => boolean
 }
 
-export default function CubeScene({ cube, onGlow, onReady }: Props) {
+export default function CubeScene({ cube, onGlow, onReady, inputLocked }: Props) {
   const rimA = useRef<SpotLight>(null)
   const rimB = useRef<SpotLight>(null)
 
@@ -90,7 +91,7 @@ export default function CubeScene({ cube, onGlow, onReady }: Props) {
       />
       <ambientLight intensity={0.06 * PI} />
       <Suspense fallback={null}>
-        <CubeModel cube={cube} onGlow={handleGlow} onReady={onReady} />
+        <CubeModel cube={cube} onGlow={handleGlow} onReady={onReady} inputLocked={inputLocked} />
         <Floor />
       </Suspense>
     </Canvas>

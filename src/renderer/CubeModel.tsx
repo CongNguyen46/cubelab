@@ -57,9 +57,11 @@ type Props = {
   onGlow?: (colour: Color) => void
   /** Called once the cube is ready, with the handle the page uses for input. */
   onReady?: (handle: CubeViewHandle | null) => void
+  /** True while Scramble or Solve is playing: pointer input is ignored. */
+  inputLocked?: () => boolean
 }
 
-export function CubeModel({ cube, turnMs = 200, onGlow, onReady }: Props) {
+export function CubeModel({ cube, turnMs = 200, onGlow, onReady, inputLocked }: Props) {
   const { scene } = useGLTF(MODEL_URL)
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
@@ -93,8 +95,9 @@ export function CubeModel({ cube, turnMs = 200, onGlow, onReady }: Props) {
         animator,
         cube,
         reduceMotion,
+        inputLocked,
       }),
-    [gl, camera, view, root, views, animator, cube],
+    [gl, camera, view, root, views, animator, cube, inputLocked],
   )
   useEffect(() => interaction.attach(), [interaction])
 
