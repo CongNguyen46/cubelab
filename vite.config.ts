@@ -37,6 +37,12 @@ function prototype(): Plugin {
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), prototype()],
+  build: {
+    // The 3D scene is a lazy chunk, loaded after first paint. three.js alone is about 700 kB
+    // minified, so that chunk cannot get under Vite's default 500 kB. NFR-2 is about the
+    // initial bundle (about 75 kB gzipped), which is unaffected. Raise this only with a reason.
+    chunkSizeWarningLimit: 1100,
+  },
   test: {
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
     coverage: {
