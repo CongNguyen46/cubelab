@@ -16,13 +16,21 @@ Owner: Cong Bao Nguyen (GitHub `CongNguyen46`). Solo personal project, no deadli
 - Design: done for the homepage. Brand canvas, prototype and Blender model are approved.
 - Sprint 0 done: scaffold, tokens, CI, Vercel. Production: https://cubelab-nine.vercel.app (prototype at `/prototype/`).
 - Sprint 1 done: cube engine (`src/engine`), R3F renderer driven by the engine (`src/renderer`), keyboard turns, move history, undo and reset on the home page.
-- Next is **Sprint 2**: drag-to-turn, whole-cube drag with settle-to-24, Scramble, solver in a Web Worker, animated Solve, and the hero (LED word, glow, floor reflection).
+- Sprint 2a done: drag-to-turn, whole-cube drag with settle-to-24, auto-spin, double-click reset, hero (LED word, glow, floor reflection, shadow), full-screen menu.
+- Next is **Sprint 2b**: solver in a Web Worker (vendored cubejs), Scramble and animated Solve.
 
 Engine notes:
 
 - `isSolved` is sticker-based: every face one colour. Whole-cube rotations and centres spun in place still count as solved.
 - `toFacelets` normalises orientation first (white centre up, green front), so the URFDLB string is valid for cubejs after x/y/z and slice moves.
 - cubejs returns a solution in that normalised frame. Before animating it (Sprint 2), remap each face letter to the current orientation: replace letter X with the face where the X centre sits now. For example, after `x` the F (green) centre is on top, so a solution move F becomes U. Without this, Solve breaks after any x/y/z or slice move. Test it: scramble, apply `x y` or `M`, solve, and check `isSolved`.
+- `remapMove(move, m)` renames a move between frames (one of the 24 rotations). It serves the keyboard, history labels and the solver remap.
+
+View and input notes:
+
+- The whole-cube view (`ViewController`) is a view rotation only. The engine never sees it.
+- Keys name faces in the viewer's frame: R is the face on your right. The key move is mapped through the settled view to an engine move. History stores the engine move plus a display label (what the user pressed, or a drag named in the view frame); chips show the label, undo uses the engine move.
+- A finished drag goes to the engine with `{ animated: true }`, so the animator only syncs instead of turning the layer again. Keyboard turns, undo and reset wait while a layer is being dragged.
 - With current three.js, set `envMap` on each material. If only `scene.environment` is set, three ignores the per-material `envMapIntensity` and the tiles wash out. Light intensities are the prototype's times PI (legacy to physical units).
 
 ## Decisions that override the requirements doc
