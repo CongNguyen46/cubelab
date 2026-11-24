@@ -7,3 +7,13 @@ export type Face = (typeof FACES)[number]
 
 export type { Axis, Mat3, Vec3 } from './math.ts'
 export { solvedState, cubieId, type Cubie, type CubeState } from './state.ts'
+export {
+  applyAlg,
+  applyMove,
+  moveGeometry,
+  MOVE_BASES,
+  type Layer,
+  type Move,
+  type MoveBase,
+  type MoveGeometry,
+} from './moves.ts'

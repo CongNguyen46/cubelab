@@ -20,11 +20,14 @@ const QUARTER: Record<Axis, Mat3> = {
   z: [0, -1, 0, 1, 0, 0, 0, 0, 1],
 }
 
+// Adding 0 turns -0 into 0, so states compare equal with toEqual and Object.is.
+const z = (n: number) => n + 0
+
 export function mulMat(a: Mat3, b: Mat3): Mat3 {
   const out: number[] = []
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 3; c++) {
-      out.push(a[r * 3]! * b[c]! + a[r * 3 + 1]! * b[3 + c]! + a[r * 3 + 2]! * b[6 + c]!)
+      out.push(z(a[r * 3]! * b[c]! + a[r * 3 + 1]! * b[3 + c]! + a[r * 3 + 2]! * b[6 + c]!))
     }
   }
   return out as unknown as Mat3
@@ -32,9 +35,9 @@ export function mulMat(a: Mat3, b: Mat3): Mat3 {
 
 export function mulVec(m: Mat3, v: Vec3): Vec3 {
   return [
-    m[0] * v[0] + m[1] * v[1] + m[2] * v[2],
-    m[3] * v[0] + m[4] * v[1] + m[5] * v[2],
-    m[6] * v[0] + m[7] * v[1] + m[8] * v[2],
+    z(m[0] * v[0] + m[1] * v[1] + m[2] * v[2]),
+    z(m[3] * v[0] + m[4] * v[1] + m[5] * v[2]),
+    z(m[6] * v[0] + m[7] * v[1] + m[8] * v[2]),
   ]
 }
 
@@ -57,7 +60,7 @@ export function fromColumns(a: Vec3, b: Vec3, c: Vec3): Mat3 {
 }
 
 export function cross(a: Vec3, b: Vec3): Vec3 {
-  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
+  return [z(a[1] * b[2] - a[2] * b[1]), z(a[2] * b[0] - a[0] * b[2]), z(a[0] * b[1] - a[1] * b[0])]
 }
 
 export function vecEquals(a: Vec3, b: Vec3): boolean {
