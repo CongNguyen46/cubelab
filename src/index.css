@@ -1,0 +1,71 @@
+@import 'tailwindcss';
+
+/* Design tokens from docs/design-system.md. Use them as Tailwind utilities,
+   for example bg-surface, border-border, text-text-subtle, bg-accent. */
+@theme {
+  --color-*: initial;
+  --color-bg: #000000;
+  --color-panel: #09090b;
+  --color-surface: #111113;
+  --color-surface-2: #18181b;
+  --color-border: #27272a;
+  --color-text: #fafafa;
+  --color-text-muted: #a1a1aa;
+  --color-text-subtle: #8a8a93;
+  --color-accent: #ff6a1a;
+  --color-accent-hover: #ff7c35;
+  --color-accent-line: rgb(255 106 26 / 0.4);
+  --color-accent-soft: rgb(255 106 26 / 0.12);
+  --color-on-accent: #160903;
+  --color-success: #7ee8c0;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Cube stickers, standard scheme */
+  --color-sticker-u: #f5f5f1;
+  --color-sticker-d: #ffe01a;
+  --color-sticker-f: #2fcf5a;
+  --color-sticker-b: #1b6bff;
+  --color-sticker-r: #f0232c;
+  --color-sticker-l: #ff8a1c;
+
+  --font-sans: Geist, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+
+  --ease-lab: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: 16px/1.55 var(--font-sans);
+    overflow-x: clip;
+  }
+
+  :focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+    border-radius: 10px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}
