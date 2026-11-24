@@ -20,8 +20,12 @@ export type CubeViewHandle = {
   orientationForInput(): Mat3
   /** A layer is being dragged or snapping: keyboard turns should wait. */
   isTurning(): boolean
-  /** Ease back to the starting view (white up, green front). */
-  resetView(): void
+  /** Ease back to the starting view (white up, green front). Resolves once it is there. */
+  resetView(): Promise<void>
+  /** Resolves when every queued turn has played. */
+  whenIdle(): Promise<void>
+  /** Jump to the end of whatever is playing. */
+  skip(): void
 }
 
 /**
@@ -99,9 +103,11 @@ export function CubeModel({ cube, turnMs = 200, onGlow, onReady }: Props) {
       orientationForInput: () => view.orientationForInput(),
       isTurning: () => interaction.turning,
       resetView: () => view.reset(),
+      whenIdle: () => animator.whenIdle(),
+      skip: () => animator.skip(),
     })
     return () => onReady?.(null)
-  }, [onReady, view, interaction])
+  }, [onReady, view, interaction, animator])
 
   useFrame((state, dt) => {
     const now = performance.now()
