@@ -1,9 +1,10 @@
 import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo } from 'react'
-import { Group, Mesh, MeshStandardMaterial, Vector3, type Object3D } from 'three'
+import { Group, Vector3, type Object3D } from 'three'
 import { cubieId, type Cube } from '../engine/index.ts'
 import { TurnAnimator } from './animator.ts'
+import { applyEnvironment, useRoomEnvironment } from './environment.ts'
 import { roundedPosition, syncToState, type CubieView } from './turn.ts'
 
 export const MODEL_URL = '/models/cubelab_cube.glb'
@@ -26,11 +27,6 @@ function buildCube(scene: Object3D) {
   const p = new Vector3()
   for (const node of nodes) {
     const id = cubieId(roundedPosition(node.getWorldPosition(p)))
-    node.traverse((m) => {
-      if (m instanceof Mesh && m.material instanceof MeshStandardMaterial) {
-        m.material.envMapIntensity = m.material.name === 'Body' ? 0.2 : 0.35
-      }
-    })
     root.attach(node)
     views.set(id, { object: node, base: node.quaternion.clone() })
   }
@@ -40,6 +36,8 @@ function buildCube(scene: Object3D) {
 export function CubeModel({ cube, turnMs = 200 }: { cube: Cube; turnMs?: number }) {
   const { scene } = useGLTF(MODEL_URL)
   const { root, views } = useMemo(() => buildCube(scene), [scene])
+  const env = useRoomEnvironment()
+  useEffect(() => applyEnvironment(root, env), [root, env])
   const animator = useMemo(
     () => new TurnAnimator(root, views, { turnMs, reduceMotion }),
     [root, views, turnMs],

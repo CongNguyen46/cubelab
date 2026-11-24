@@ -1,7 +1,6 @@
 import { Canvas, useThree } from '@react-three/fiber'
-import { Suspense, useEffect, useLayoutEffect, useMemo } from 'react'
-import { ACESFilmicToneMapping, Color, MathUtils, PMREMGenerator, Vector3 } from 'three'
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
+import { Suspense, useLayoutEffect } from 'react'
+import { ACESFilmicToneMapping, Color, MathUtils, Vector3 } from 'three'
 import type { Cube } from '../engine/index.ts'
 import { CubeModel } from './CubeModel.tsx'
 
@@ -16,21 +15,6 @@ const FOV = 27
 const PI = Math.PI
 // Rim lights take the glow colour (green front centre for now) mixed 35% with white.
 const RIM = new Color(0x2fcf5a).lerp(new Color(0xffffff), 0.35)
-
-/** Reflections from three's RoomEnvironment, attached as scene.environment. */
-function RoomLighting() {
-  const gl = useThree((s) => s.gl)
-  const env = useMemo(() => {
-    const pmrem = new PMREMGenerator(gl)
-    const room = new RoomEnvironment()
-    const texture = pmrem.fromScene(room, 0.04).texture
-    room.dispose()
-    pmrem.dispose()
-    return texture
-  }, [gl])
-  useEffect(() => () => env.dispose(), [env])
-  return <primitive object={env} attach="environment" />
-}
 
 function FitCamera() {
   const camera = useThree((s) => s.camera)
@@ -62,7 +46,6 @@ export default function CubeScene({ cube }: { cube: Cube }) {
       role="img"
     >
       <FitCamera />
-      <RoomLighting />
       <directionalLight position={[-4, 7, 6]} intensity={1.05 * PI} />
       <directionalLight position={[5, 2, 6]} intensity={0.2 * PI} />
       <spotLight
