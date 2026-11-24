@@ -35,7 +35,7 @@ function prototype(): Plugin {
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss(), prototype()],
   build: {
     // The 3D scene is a lazy chunk, loaded after first paint. three.js alone is about 700 kB
@@ -44,7 +44,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 1100,
   },
   test: {
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    // `*.slow.test.ts` files run only with `vitest --mode slow` (npm run test:slow).
+    include:
+      mode === 'slow' ? ['src/**/*.slow.test.ts'] : ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    exclude: mode === 'slow' ? [] : ['src/**/*.slow.test.ts', 'node_modules/**'],
     coverage: {
       provider: 'v8',
       // The gate covers the engine only (NFR-10). Renderer and UI get their own checks.
@@ -54,4 +57,4 @@ export default defineConfig({
       thresholds: { lines: 90, functions: 90, branches: 90, statements: 90 },
     },
   },
-})
+}))
