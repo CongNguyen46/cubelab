@@ -2,7 +2,7 @@
 
 A web app with a playable 3D Rubik's cube at the centre of the home page and three buttons under it: Scramble, Solve, Timer. Later areas: Cube Builder (rebuild a real stuck cube piece by piece, then solve it), a beginner layer-by-layer guide, and an Advanced CFOP library that shows Coming soon in v1.
 
-Owner: Cong Bao Nguyen (GitHub `bao040605`). Solo personal project, no deadline, built sprint by sprint following the SDLC. Claude is the pair programmer and reviewer.
+Owner: Cong Bao Nguyen (GitHub `CongNguyen46`). Solo personal project, no deadline, built sprint by sprint following the SDLC. Claude is the pair programmer and reviewer.
 
 ## Read these first
 
@@ -79,6 +79,7 @@ Modules talk through small typed interfaces. Keep `engine/` free of UI imports s
 - Ask before adding a dependency that is not in the stack above.
 - Do not change the look of the homepage without checking it against `prototype/index.html` side by side.
 - Never commit secrets or `.env` files.
+- No Claude attribution anywhere: no Co-Authored-By trailers in commits, no 'Generated with Claude Code' line in PR descriptions.
 
 ## Commands (after Sprint 0)
 
