@@ -26,3 +26,10 @@ export {
   parseAlg,
   parseMove,
 } from './notation.ts'
+export {
+  FACELET_ORDER,
+  isSolved,
+  normalizeOrientation,
+  spatialFacelets,
+  toFacelets,
+} from './facelets.ts'
