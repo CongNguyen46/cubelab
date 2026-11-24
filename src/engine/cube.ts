@@ -11,6 +11,8 @@ export type CubeEvent =
       readonly steps: readonly Step[]
       /** True when the view already showed these turns (a finished drag): just sync, don't animate. */
       readonly animated: boolean
+      /** Milliseconds per quarter turn for these moves, when the caller wants a set pace. */
+      readonly tempo?: number
     }
   | { readonly type: 'reset'; readonly state: CubeState }
 
@@ -24,6 +26,8 @@ export type ApplyOptions = {
   labels?: readonly string[]
   /** The view already animated these turns (see CubeEvent). */
   animated?: boolean
+  /** Pace for the renderer, in ms per quarter turn: Scramble and Solve play at a set speed. */
+  tempo?: number
 }
 
 type Entry = { readonly move: Move; readonly label: string }
@@ -76,7 +80,7 @@ export function createCube(initial: CubeState = solvedState()): Cube {
     },
     apply(moves, options = {}) {
       if (moves.length === 0) return
-      const { labels, animated = false } = options
+      const { labels, animated = false, tempo } = options
       if (labels && labels.length !== moves.length) {
         throw new Error(`Got ${labels.length} labels for ${moves.length} moves`)
       }
@@ -85,7 +89,7 @@ export function createCube(initial: CubeState = solvedState()): Cube {
         ...moves.map((move, i) => ({ move, label: labels?.[i] ?? formatMove(move) })),
       ]
       future = []
-      emit({ type: 'moves', steps: run(moves), animated })
+      emit({ type: 'moves', steps: run(moves), animated, ...(tempo ? { tempo } : {}) })
     },
     undo() {
       const last = history.at(-1)

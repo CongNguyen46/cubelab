@@ -125,3 +125,15 @@ describe('labels and animated moves', () => {
     expect(flags).toEqual([false, true, false, false])
   })
 })
+
+describe('tempo', () => {
+  it('passes a set pace through to listeners, and only when asked', () => {
+    const cube = createCube()
+    const tempos: (number | undefined)[] = []
+    cube.subscribe((e) => e.type === 'moves' && tempos.push(e.tempo))
+    cube.apply(parseAlg('R U'), { tempo: 120 })
+    cube.apply(parseAlg('F'))
+    cube.undo()
+    expect(tempos).toEqual([120, undefined, undefined])
+  })
+})
