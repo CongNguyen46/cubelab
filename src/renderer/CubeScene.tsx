@@ -37,7 +37,7 @@ type Props = {
   /** Glow colour every frame, for the page's CSS glow and LED word. */
   onGlow?: (colour: Color) => void
   onReady?: (handle: CubeViewHandle | null) => void
-  inputLocked?: () => boolean
+  inputLocked?: (pointerType: string) => boolean
 }
 
 export default function CubeScene({ cube, onGlow, onReady, inputLocked }: Props) {

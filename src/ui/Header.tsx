@@ -2,11 +2,14 @@ import { useEffect, useRef } from 'react'
 import { MenuIcon } from './icons.tsx'
 import { Logo } from './Logo.tsx'
 import { useUiStore } from './uiStore.ts'
+import { isActive, useTimerStore } from '../timer/index.ts'
 
 export function Header() {
   const open = useUiStore((s) => s.menuOpen)
   const setOpen = useUiStore((s) => s.setMenuOpen)
   const button = useRef<HTMLButtonElement>(null)
+  // The menu waits while the timer is held or running.
+  const timerActive = useTimerStore((s) => isActive(s.timer))
   const wasOpen = useRef(false)
 
   // Give focus back to the hamburger when the menu closes.
@@ -25,6 +28,7 @@ export function Header() {
         aria-expanded={open}
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
+        disabled={timerActive}
         className="inline-grid size-11 cursor-pointer place-items-center rounded-xl border-0 bg-transparent text-text"
       >
         <MenuIcon />
