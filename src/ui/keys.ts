@@ -1,4 +1,11 @@
-import type { Move, MoveBase } from '../engine/index.ts'
+import {
+  formatMove,
+  remapMove,
+  transpose,
+  type Mat3,
+  type Move,
+  type MoveBase,
+} from '../engine/index.ts'
 
 const KEY_TO_BASE: Readonly<Record<string, MoveBase>> = {
   KeyR: 'R',
@@ -38,4 +45,13 @@ export function keyToAction(e: KeyInput): KeyAction {
   const base = KEY_TO_BASE[e.code]
   if (!base) return null
   return { type: 'move', move: { base, turns: e.shiftKey ? 3 : 1 } }
+}
+
+/**
+ * Turn a key move into the engine move and the label the user should see. Keys name faces in
+ * the viewer's frame (R is the face on your right), so the move is mapped through the view
+ * orientation. The engine records its own frame; the label keeps what the user pressed.
+ */
+export function keyMoveToEngine(move: Move, view: Mat3): { move: Move; label: string } {
+  return { move: remapMove(move, transpose(view)), label: formatMove(move) }
 }

@@ -12,6 +12,7 @@ export {
   applyMove,
   moveGeometry,
   MOVE_BASES,
+  MOVE_DEFS,
   type Layer,
   type Move,
   type MoveBase,
@@ -33,4 +34,13 @@ export {
   spatialFacelets,
   toFacelets,
 } from './facelets.ts'
-export { createCube, type Cube, type CubeEvent, type Listener, type Step } from './cube.ts'
+export {
+  createCube,
+  type ApplyOptions,
+  type Cube,
+  type CubeEvent,
+  type Listener,
+  type Step,
+} from './cube.ts'
+export { isCubeRotation, remapAlg, remapMove } from './remap.ts'
+export { IDENTITY, matEquals, mulMat, rotation, transpose } from './math.ts'

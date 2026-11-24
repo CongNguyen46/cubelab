@@ -1,5 +1,6 @@
-import { CubeStage } from './ui/CubeStage.tsx'
 import { Header } from './ui/Header.tsx'
+import { Hero } from './ui/Hero.tsx'
+import { Menu, Toast } from './ui/Menu.tsx'
 import { MoveHistory } from './ui/MoveHistory.tsx'
 import { PillButton } from './ui/PillButton.tsx'
 import { ScrambleIcon, SolveIcon, TimerIcon } from './ui/icons.tsx'
@@ -11,7 +12,7 @@ export function App() {
     <div className="flex min-h-full flex-col">
       <Header />
       <main className="flex flex-col items-center px-4 pb-7">
-        <CubeStage />
+        <Hero />
         <div className="mt-1 grid h-11 place-items-center">
           <p className="m-0 text-center font-mono text-[15px] font-medium text-text-subtle">
             Hold{' '}
@@ -35,6 +36,8 @@ export function App() {
         </div>
         <MoveHistory />
       </main>
+      <Menu />
+      <Toast />
     </div>
   )
 }

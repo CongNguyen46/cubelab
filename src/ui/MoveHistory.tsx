@@ -1,5 +1,6 @@
 import { useCubeStore } from './cubeStore.ts'
 import { ResetIcon, UndoIcon } from './icons.tsx'
+import { useUiStore } from './uiStore.ts'
 
 const SHOWN = 10
 
@@ -10,8 +11,12 @@ const iconButton =
 export function MoveHistory() {
   const history = useCubeStore((s) => s.history)
   const canUndo = useCubeStore((s) => s.canUndo)
-  const undo = useCubeStore((s) => s.undo)
-  const reset = useCubeStore((s) => s.reset)
+  const undoMove = useCubeStore((s) => s.undo)
+  const resetCube = useCubeStore((s) => s.reset)
+  // Wait for a dragged layer to land before changing the cube.
+  const idle = () => !useUiStore.getState().view?.isTurning()
+  const undo = () => idle() && undoMove()
+  const reset = () => idle() && resetCube()
   const shown = history.slice(-SHOWN)
   const offset = history.length - shown.length
 

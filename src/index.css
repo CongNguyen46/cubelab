@@ -69,3 +69,121 @@
     }
   }
 }
+
+/* Hero, menu and toast, ported from prototype/index.html. */
+@layer components {
+  .hero {
+    --glow: #2fcf5a;
+    --neon-core: #bff5cf;
+    position: relative;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    isolation: isolate;
+  }
+
+  .hero-glow {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: -1;
+    width: min(620px, 90vw);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: var(--glow);
+    opacity: 0.18;
+    filter: blur(90px);
+    pointer-events: none;
+  }
+
+  .led-word {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: -1;
+    width: min(94vw, 1400px);
+    height: auto;
+    overflow: visible;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    user-select: none;
+    animation: led-on 0.9s ease-out both;
+  }
+
+  .led-word text {
+    font-family: var(--font-sans);
+    font-weight: 700;
+  }
+
+  @keyframes led-on {
+    from {
+      opacity: 0;
+    }
+  }
+
+  .menu {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    padding: 0 max(4vw, 16px) 28px;
+    background: rgb(0 0 0 / 0.97);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+
+  .menu[data-open='true'] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .menu-item {
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 0.35s ease,
+      transform 0.45s var(--ease-lab),
+      color 0.2s;
+    transition-delay: calc(var(--i) * 45ms);
+  }
+
+  .menu[data-open='true'] .menu-item {
+    opacity: 1;
+    transform: none;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    z-index: 30;
+    padding: 12px 20px;
+    border-radius: 999px;
+    background: var(--color-text);
+    color: #09090b;
+    font-weight: 600;
+    opacity: 0;
+    transform: translate(-50%, 20px);
+    transition: all 0.35s var(--ease-lab);
+    pointer-events: none;
+  }
+
+  .toast[data-on='true'] {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .led-word,
+    .menu,
+    .menu-item,
+    .toast {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}

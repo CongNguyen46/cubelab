@@ -39,7 +39,8 @@ export type AnimatorOptions = {
  * like: after each turn it places every cubie from the engine state that came with that move.
  */
 export class TurnAnimator {
-  private queue: Step[] = []
+  /** Queued steps. `shown` steps were already animated by the view (a drag): they only sync. */
+  private queue: { step: Step; shown: boolean }[] = []
   private active: Active | null = null
   private readonly root: Object3D
   private readonly views: ReadonlyMap<number, CubieView>
@@ -67,7 +68,12 @@ export class TurnAnimator {
       syncToState(this.views, event.state)
       return
     }
-    this.queue.push(...event.steps)
+    // A finished drag is already on screen. With nothing queued, place the cubies now.
+    if (event.animated && !this.busy) {
+      for (const step of event.steps) syncToState(this.views, step.state)
+      return
+    }
+    this.queue.push(...event.steps.map((step) => ({ step, shown: event.animated })))
   }
 
   /** Advance the animation. `now` is in milliseconds, for example from performance.now(). */
@@ -76,8 +82,13 @@ export class TurnAnimator {
     for (let guard = 0; guard < 64; guard++) {
       if (!this.active) {
         const waiting = this.queue.length
-        const step = this.queue.shift()
-        if (!step) return
+        const next = this.queue.shift()
+        if (!next) return
+        const { step } = next
+        if (next.shown) {
+          syncToState(this.views, step.state)
+          continue
+        }
         const g = moveGeometry(step.move)
         const objects = [...this.views.values()].map((v) => v.object)
         const duration = this.reduceMotion() ? 0 : turnDuration(this.turnMs, g, waiting)

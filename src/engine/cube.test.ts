@@ -88,3 +88,40 @@ describe('createCube', () => {
     expect(formatAlg(undo.steps.map((s) => s.move))).toBe("U'")
   })
 })
+
+describe('labels and animated moves', () => {
+  it('records a label per move, defaulting to engine notation', () => {
+    const cube = createCube()
+    cube.apply(parseAlg('R U'))
+    cube.apply(parseAlg('B'), { labels: ['R'] })
+    expect(formatAlg(cube.history)).toBe('R U B')
+    expect(cube.labels).toEqual(['R', 'U', 'R'])
+  })
+
+  it('undo and redo keep labels with their moves', () => {
+    const cube = createCube()
+    cube.apply(parseAlg("F M'"), { labels: ['R', "S'"] })
+    cube.undo()
+    expect(cube.labels).toEqual(['R'])
+    cube.redo()
+    expect(cube.labels).toEqual(['R', "S'"])
+    expect(formatAlg(cube.history)).toBe("F M'")
+  })
+
+  it('rejects a label list of the wrong length', () => {
+    expect(() => createCube().apply(parseAlg('R U'), { labels: ['R'] })).toThrow(
+      'Got 1 labels for 2 moves',
+    )
+  })
+
+  it('marks events as animated only when asked', () => {
+    const cube = createCube()
+    const flags: boolean[] = []
+    cube.subscribe((e) => e.type === 'moves' && flags.push(e.animated))
+    cube.apply(parseAlg('R'))
+    cube.apply(parseAlg('U'), { animated: true })
+    cube.undo()
+    cube.redo()
+    expect(flags).toEqual([false, true, false, false])
+  })
+})
