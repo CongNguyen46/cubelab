@@ -188,6 +188,49 @@
   }
 }
 
+/* Timer digits, from the prototype's .tdig. */
+@layer components {
+  .timer-digits {
+    margin: 0;
+    font: 500 30px/1 var(--font-mono);
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    transition: color 0.15s;
+    animation: timer-in 0.25s var(--ease-lab) both;
+  }
+
+  .timer-digits[data-t='hold'] {
+    color: var(--color-text-subtle);
+  }
+
+  .timer-digits[data-t='ready'] {
+    color: var(--color-success);
+  }
+
+  .timer-digits[data-t='running'],
+  .timer-digits[data-t='stopped'] {
+    color: var(--color-accent);
+  }
+
+  @keyframes timer-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .timer-digits {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
 /* Solve button: loading-to-done, from the prototype (Lucian UX/UI Prompt #438, MIT, Seokwoooo). */
 @layer components {
   .solve-btn {
