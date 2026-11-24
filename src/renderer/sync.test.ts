@@ -217,3 +217,30 @@ describe('backlog speed-up', () => {
 function countQueued(anim: TurnAnimator): number {
   return (anim as unknown as { queue: unknown[] }).queue.length
 }
+
+describe('moves the view already animated', () => {
+  it('sync at once without turning anything', () => {
+    const { root, views } = buildScene()
+    const cube = createCube()
+    const anim = new TurnAnimator(root, views)
+    cube.subscribe((e) => anim.handle(e))
+    cube.apply(parseAlg("R U'"), { animated: true })
+    expect(anim.busy).toBe(false)
+    expect(root.children.length).toBe(26)
+    expectInSync(views, cube.state, 'animated')
+  })
+
+  it('wait their turn behind queued animations', () => {
+    const { root, views } = buildScene()
+    const cube = createCube()
+    const anim = new TurnAnimator(root, views, { turnMs: 100 })
+    cube.subscribe((e) => anim.handle(e))
+    cube.apply(parseAlg('F'))
+    cube.apply(parseAlg('R'), { animated: true })
+    anim.update(0)
+    expect(anim.busy).toBe(true)
+    anim.update(100)
+    expect(anim.busy).toBe(false)
+    expectInSync(views, cube.state, 'after F then shown R')
+  })
+})

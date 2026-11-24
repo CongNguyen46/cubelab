@@ -1,15 +1,15 @@
 import { create } from 'zustand'
-import { createCube, formatMove, isSolved, type Cube, type Move } from '../engine/index.ts'
+import { createCube, isSolved, type ApplyOptions, type Cube, type Move } from '../engine/index.ts'
 
 type CubeStore = {
   /** The engine instance. The renderer subscribes to it directly. */
   cube: Cube
-  /** Move history in notation, oldest first, for the chips under the cube. */
+  /** Move labels as the user saw them, oldest first, for the chips under the cube. */
   history: string[]
   canUndo: boolean
   canRedo: boolean
   solved: boolean
-  apply: (moves: readonly Move[]) => void
+  apply: (moves: readonly Move[], options?: ApplyOptions) => void
   undo: () => void
   redo: () => void
   reset: () => void
@@ -19,7 +19,7 @@ type CubeStore = {
 export function createCubeStore(cube: Cube = createCube()) {
   return create<CubeStore>()((set) => {
     const snapshot = () => ({
-      history: cube.history.map(formatMove),
+      history: [...cube.labels],
       canUndo: cube.canUndo,
       canRedo: cube.canRedo,
       solved: isSolved(cube.state),
@@ -28,7 +28,7 @@ export function createCubeStore(cube: Cube = createCube()) {
     return {
       cube,
       ...snapshot(),
-      apply: (moves) => cube.apply(moves),
+      apply: (moves, options) => cube.apply(moves, options),
       undo: () => cube.undo(),
       redo: () => cube.redo(),
       reset: () => cube.reset(),
