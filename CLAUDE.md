@@ -19,7 +19,7 @@ Owner: Cong Bao Nguyen (GitHub `CongNguyen46`). Solo personal project, no deadli
 - Sprint 2a done: drag-to-turn, whole-cube drag with settle-to-24, auto-spin, double-click reset, hero (LED word, glow, floor reflection, shadow), full-screen menu.
 - Sprint 2b done: two-phase solver (vendored cubejs) in a Web Worker, Scramble and animated Solve with the loading-to-done button. **Milestone: core MVP.**
 - Sprint 3a done: inline timer (state machine in `src/timer`), Space, Timer button, Esc, touch pad, input locks.
-- Next is **Sprint 3b**: inspection, new scramble after each solve, session panel, Dexie storage.
+- Sprint 3b in review: inspection, new scramble after each solve, session panel, Dexie storage.
 
 Engine notes:
 
@@ -42,6 +42,9 @@ Timer notes:
 - Space is handled in the capture phase and always `preventDefault`ed, so it never scrolls, clicks a focused button or reaches the cube keys.
 - `inputLocked(pointerType?)` in `ui/playStore.ts` is the one lock: Scramble/Solve playing or the timer held/running locks keys, drags, undo, reset and the menu. While the digits show, touch on the cube area belongs to the timer; mouse still turns the cube.
 - Esc while running discards the solve (no result).
+- Inspection is a phase of the same machine (`inspecting`, plus `inspectAt` kept while the solve is held to start). Results carry a penalty: start after 15 s is +2, inspection past 17 s is a DNF recorded on a tick.
+- `ui/session.ts` owns the session: it saves each result with the scramble shown, fetches the next scramble from the worker, and writes penalty edits, deletes and the inspection switch through to `storage/`. If IndexedDB fails it falls back to memory and toasts once.
+- The session panel and the scramble line show only while the timer digits show. With the timer hidden the page is the design.
 
 View and input notes:
 
@@ -106,7 +109,7 @@ Modules talk through small typed interfaces. Keep `engine/` free of UI imports s
 
 ## Known issues
 
-- On Windows, a Vitest run started right after a command rewrites test files can fail every suite with "Cannot read properties of undefined (reading 'config')". Running it again passes. Not seen in CI.
+- Vitest fails every suite with "Cannot read properties of undefined (reading 'config')" when started from Git Bash on Windows. Run it from PowerShell or cmd. Not seen in CI.
 
 ## Rules
 
