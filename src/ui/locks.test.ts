@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { initialTimer, useTimerStore, type TimerPhase } from '../timer/index.ts'
+import { initialTimer, isActive, useTimerStore, type TimerPhase } from '../timer/index.ts'
 import { inputLocked, pointerLocked, turnsLocked, usePlayStore } from './playStore.ts'
 
 const setPhase = (phase: TimerPhase) =>
   useTimerStore.setState({ timer: { ...initialTimer, phase } })
 
-describe('input locks while timing', () => {
+describe('input locks and the timer', () => {
   afterEach(() => {
     setPhase('hidden')
     usePlayStore.setState({ mode: 'idle' })
@@ -13,27 +13,35 @@ describe('input locks while timing', () => {
 
   it('nothing is locked with the timer hidden', () => {
     expect(inputLocked()).toBe(false)
-    expect(inputLocked('touch')).toBe(false)
-    expect(inputLocked('mouse')).toBe(false)
+    expect(pointerLocked()).toBe(false)
+    expect(turnsLocked()).toBe(false)
   })
 
-  it.each<TimerPhase>(['pressing', 'hold', 'ready', 'running'])(
-    'keys and every pointer are locked while %s',
+  it.each<TimerPhase>(['pressing', 'hold', 'ready'])(
+    'while the timer is held (%s), keys, Undo and every drag wait',
     (phase) => {
       setPhase(phase)
       expect(inputLocked()).toBe(true)
-      expect(inputLocked('mouse')).toBe(true)
-      expect(inputLocked('touch')).toBe(true)
+      expect(pointerLocked()).toBe(true)
     },
   )
 
+  it('while the timer runs, keys, Undo and drags (mouse and touch) work: you solve the cube', () => {
+    setPhase('running')
+    expect(inputLocked()).toBe(false)
+    expect(pointerLocked()).toBe(false)
+    expect(turnsLocked()).toBe(false)
+    // Scramble, Solve and the menu still wait while it runs.
+    expect(isActive(useTimerStore.getState().timer)).toBe(true)
+  })
+
   it.each<TimerPhase>(['idle', 'stopped'])(
-    'while the digits show (%s), only touch belongs to the timer',
+    'with the digits shown (%s), touch on the cube turns the cube: no timer pad there',
     (phase) => {
       setPhase(phase)
       expect(inputLocked()).toBe(false)
-      expect(inputLocked('mouse')).toBe(false)
-      expect(inputLocked('touch')).toBe(true)
+      expect(pointerLocked()).toBe(false)
+      expect(isActive(useTimerStore.getState().timer)).toBe(false)
     },
   )
 
@@ -42,17 +50,7 @@ describe('input locks while timing', () => {
       usePlayStore.setState({ mode })
       expect(inputLocked()).toBe(true)
       expect(turnsLocked()).toBe(true)
-      expect(pointerLocked('mouse')).toBe(false)
-      expect(pointerLocked('touch')).toBe(false)
+      expect(pointerLocked()).toBe(false)
     }
-  })
-
-  it('the canvas follows the timer: locked while held or running, touch only while shown', () => {
-    expect(turnsLocked()).toBe(false)
-    setPhase('running')
-    expect(pointerLocked('mouse')).toBe(true)
-    setPhase('stopped')
-    expect(pointerLocked('mouse')).toBe(false)
-    expect(pointerLocked('touch')).toBe(true)
   })
 })

@@ -2,7 +2,7 @@ import { useCubeStore } from './cubeStore.ts'
 import { UndoIcon } from './icons.tsx'
 import { inputLocked, usePlayStore } from './playStore.ts'
 import { useUiStore } from './uiStore.ts'
-import { isActive, useTimerStore } from '../timer/index.ts'
+import { isHeld, useTimerStore } from '../timer/index.ts'
 
 /** Chips shown: 10, or 6 on narrow screens (the track clips the oldest four there). */
 export const SHOWN = 10
@@ -26,9 +26,10 @@ export function MoveHistory() {
   const canUndo = useCubeStore((s) => s.canUndo)
   const undoMove = useCubeStore((s) => s.undo)
   // Wait for a dragged layer to land before changing the cube.
-  const timerActive = useTimerStore((s) => isActive(s.timer))
+  const timerHeld = useTimerStore((s) => isHeld(s.timer))
   const idle = () => !useUiStore.getState().view?.isTurning() && !inputLocked()
-  const playing = usePlayStore((s) => s.mode !== 'idle') || timerActive
+  // Undo works while the timer runs; it waits only while the timer is held.
+  const playing = usePlayStore((s) => s.mode !== 'idle') || timerHeld
   const undo = () => idle() && undoMove()
   return <MoveHistoryRow history={history} undoDisabled={!canUndo || playing} onUndo={undo} />
 }

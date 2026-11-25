@@ -5,6 +5,7 @@ export {
   displayMs,
   initialTimer,
   isActive,
+  isHeld,
   isShown,
   timerReducer,
   type TimerEvent,
