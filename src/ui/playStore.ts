@@ -24,6 +24,20 @@ export function inputLocked(pointerType?: string): boolean {
   return pointerType === 'touch' && isShown(timer)
 }
 
+/**
+ * The lock for pointers on the cube canvas. Like inputLocked, except that Scramble and Solve
+ * playing leave the view free: you can drag the whole cube round while the moves play (layer
+ * turns still wait, see turnsLocked).
+ */
+export function pointerLocked(pointerType: string): boolean {
+  const { timer } = useTimerStore.getState()
+  if (isActive(timer)) return true
+  return pointerType === 'touch' && isShown(timer)
+}
+
+/** Scramble or Solve is playing: a drag on a face turns the view, not the layer. */
+export const turnsLocked = () => usePlayStore.getState().mode !== 'idle'
+
 /** Build the solver tables while the page is idle, so the first Solve is quick (NFR-3). */
 export function warmUpSolverWhenIdle() {
   const start = () => void solver.warmUp().catch(() => {})

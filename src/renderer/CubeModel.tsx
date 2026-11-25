@@ -57,9 +57,18 @@ type Props = {
   onReady?: (handle: CubeViewHandle | null) => void
   /** True when the page owns pointer input (see InteractionDeps.inputLocked). */
   inputLocked?: (pointerType: string) => boolean
+  /** True while only the view may be dragged (see InteractionDeps.turnsLocked). */
+  turnsLocked?: () => boolean
 }
 
-export function CubeModel({ cube, turnMs = 200, onGlow, onReady, inputLocked }: Props) {
+export function CubeModel({
+  cube,
+  turnMs = 200,
+  onGlow,
+  onReady,
+  inputLocked,
+  turnsLocked,
+}: Props) {
   const { scene } = useGLTF(MODEL_URL)
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
@@ -94,8 +103,9 @@ export function CubeModel({ cube, turnMs = 200, onGlow, onReady, inputLocked }: 
         cube,
         reduceMotion,
         inputLocked,
+        turnsLocked,
       }),
-    [gl, camera, view, root, views, animator, cube, inputLocked],
+    [gl, camera, view, root, views, animator, cube, inputLocked, turnsLocked],
   )
   useEffect(() => interaction.attach(), [interaction])
 

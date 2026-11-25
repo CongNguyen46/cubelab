@@ -38,9 +38,10 @@ type Props = {
   onGlow?: (colour: Color) => void
   onReady?: (handle: CubeViewHandle | null) => void
   inputLocked?: (pointerType: string) => boolean
+  turnsLocked?: () => boolean
 }
 
-export default function CubeScene({ cube, onGlow, onReady, inputLocked }: Props) {
+export default function CubeScene({ cube, onGlow, onReady, inputLocked, turnsLocked }: Props) {
   const rimA = useRef<SpotLight>(null)
   const rimB = useRef<SpotLight>(null)
 
@@ -91,7 +92,13 @@ export default function CubeScene({ cube, onGlow, onReady, inputLocked }: Props)
       />
       <ambientLight intensity={0.06 * PI} />
       <Suspense fallback={null}>
-        <CubeModel cube={cube} onGlow={handleGlow} onReady={onReady} inputLocked={inputLocked} />
+        <CubeModel
+          cube={cube}
+          onGlow={handleGlow}
+          onReady={onReady}
+          inputLocked={inputLocked}
+          turnsLocked={turnsLocked}
+        />
         <Floor />
       </Suspense>
     </Canvas>
