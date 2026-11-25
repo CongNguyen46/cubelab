@@ -15,6 +15,7 @@ type Input =
   | { type: 'button' }
   | { type: 'clickDigits' }
   | { type: 'escape' }
+  | { type: 'setInspection'; on: boolean }
 
 type TimerStore = {
   timer: TimerState
