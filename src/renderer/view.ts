@@ -10,6 +10,9 @@ const UNIT: Readonly<Record<AxisKey, Vector3>> = {
   z: new Vector3(0, 0, 1),
 }
 
+/** Camera direction from the prototype. The distance is worked out from the canvas size. */
+export const CAM_DIR: Readonly<Vector3> = new Vector3(6.4, 3.6, 7.6).normalize()
+
 /**
  * The home view: white up, the orange (L) face toward the camera. A quarter turn about the vertical
  * axis from the engine frame (white up, green front). It turns the view only; the engine frame

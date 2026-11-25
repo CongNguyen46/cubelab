@@ -1,12 +1,11 @@
 import { Canvas, useThree } from '@react-three/fiber'
 import { Suspense, useCallback, useLayoutEffect, useRef } from 'react'
-import { ACESFilmicToneMapping, Color, MathUtils, Vector3, type SpotLight } from 'three'
+import { ACESFilmicToneMapping, Color, MathUtils, type SpotLight } from 'three'
 import type { Cube } from '../engine/index.ts'
 import { CubeModel, type CubeViewHandle } from './CubeModel.tsx'
+import { CAM_DIR } from './view.ts'
 import { Floor } from './Floor.tsx'
 
-// Camera direction from the prototype. Distance is worked out from the canvas size.
-const CAM_DIR = new Vector3(6.4, 3.6, 7.6).normalize()
 // The cube's corners reach about 2.7 units from the centre at any tilt; 2.95 leaves a margin.
 const FIT_RADIUS = 2.95
 const FOV = 27

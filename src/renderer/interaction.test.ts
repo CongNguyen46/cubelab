@@ -4,6 +4,7 @@ import { formatMove, IDENTITY, rotation } from '../engine/index.ts'
 import { moveForLayerTurn, pickDragAxis, snapAxis, snapQuarterTurns } from './drag.ts'
 import { CENTRE_IDS, GlowTracker, glowBlend, GLOW_HYSTERESIS, pickGlowFace } from './glow.ts'
 import {
+  CAM_DIR,
   HOME_VIEW,
   nearestOrientation,
   quaternionToMat3,
@@ -201,6 +202,58 @@ describe('glow', () => {
     root.updateMatrixWorld(true)
     glow.update(centres, camera, 0.016, true)
     expect(glow.face).toBe(5)
+  })
+})
+
+describe('glow at a settled view', () => {
+  /** The six centres placed as the view `q` shows them. */
+  const centresAt = (q: Quaternion) => {
+    const root = new Object3D()
+    root.quaternion.copy(q)
+    const normals: [number, number, number][] = [
+      [1, 0, 0],
+      [-1, 0, 0],
+      [0, 1, 0],
+      [0, -1, 0],
+      [0, 0, 1],
+      [0, 0, -1],
+    ]
+    const centres = normals.map((n) => {
+      const o = new Object3D()
+      o.position.set(...n)
+      root.add(o)
+      return o
+    })
+    root.updateMatrixWorld(true)
+    return centres
+  }
+
+  it('back at home (double-click), the glow returns to orange whatever it showed before', () => {
+    for (let from = 0; from < 6; from++) {
+      const glow = new GlowTracker()
+      glow.face = from
+      glow.update(centresAt(HOME_VIEW as Quaternion), CAM_DIR.clone(), 0.016, true)
+      expect(glow.face, `from face ${from}`).toBe(1)
+    }
+  })
+
+  it('in every settled view the glow ends on the face toward the camera', () => {
+    const turns = [0, 1, 2, 3]
+    for (const a of turns)
+      for (const b of turns) {
+        const q = yTurn(90 * a).multiply(
+          new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), deg(90 * b)),
+        )
+        const centres = centresAt(q)
+        const scores = centres.map((c) => c.getWorldPosition(new Vector3()).dot(CAM_DIR))
+        const front = scores.indexOf(Math.max(...scores))
+        for (let from = 0; from < 6; from++) {
+          const glow = new GlowTracker()
+          glow.face = from
+          glow.update(centres, CAM_DIR.clone(), 0.016, true)
+          expect(glow.face).toBe(front)
+        }
+      }
   })
 })
 
