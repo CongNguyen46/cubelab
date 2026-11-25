@@ -2,6 +2,7 @@ import { solver } from '../solver/client.ts'
 import { isActive, isShown, useTimerStore } from '../timer/index.ts'
 import { useCubeStore } from './cubeStore.ts'
 import { createPlayStore } from './play.ts'
+import { createSolvedFlash } from './solvedFlash.ts'
 import { useUiStore } from './uiStore.ts'
 
 /** The page's Scramble and Solve state, wired to the real cube, view and solver worker. */
@@ -12,6 +13,9 @@ export const usePlayStore = createPlayStore({
   reduceMotion: () => matchMedia('(prefers-reduced-motion: reduce)').matches,
   onError: (text) => useUiStore.getState().showToast(text),
 })
+
+/** "Solved in N moves" over the timer digits for a moment after a Solve. */
+export const useSolvedFlash = createSolvedFlash({ timer: useTimerStore, play: usePlayStore })
 
 /**
  * True while the page owns input: Scramble or Solve playing, or the timer held or running. Keys,
