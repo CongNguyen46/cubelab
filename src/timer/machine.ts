@@ -39,6 +39,8 @@ export type TimerEvent =
   | { type: 'clickDigits' }
   /** Esc: hides the digits. A running solve is discarded. */
   | { type: 'escape' }
+  /** The on-screen cube became solved: stops a running timer (auto-stop). */
+  | { type: 'solved'; now: number }
 
 /** A solve that just finished, to record. */
 export type TimerResult = { ms: number }
@@ -58,9 +60,13 @@ export const initialTimer: TimerState = {
 /** Digits are on screen (the hint line is not). */
 export const isShown = (s: TimerState) => s.phase !== 'hidden' && s.phase !== 'pressing'
 
-/** The timer owns input: cube keys, drags, Scramble, Solve and the menu wait. */
+/** Held or running: Scramble, Solve and the menu wait (cube input waits only while held). */
 export const isActive = (s: TimerState) =>
   s.phase === 'pressing' || s.phase === 'hold' || s.phase === 'ready' || s.phase === 'running'
+
+/** Space (or a touch on the digits) is held before a start: grey or mint. Cube input waits. */
+export const isHeld = (s: TimerState) =>
+  s.phase === 'pressing' || s.phase === 'hold' || s.phase === 'ready'
 
 /** What the digits read at `now`. */
 export function displayMs(s: TimerState, now: number): number {
@@ -159,6 +165,9 @@ export function timerReducer(
 
     case 'clickDigits':
       return { state: state.phase === 'stopped' ? hide(state) : state }
+
+    case 'solved':
+      return state.phase === 'running' ? wrap(stop(state, event.now)) : { state }
 
     case 'escape':
       // Hides from any phase. A running solve is dropped, not recorded.

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { isActive, isShown, useTimerStore } from './timer/index.ts'
+import { watchAutoStop } from './ui/autoStop.ts'
 import { useCubeStore } from './ui/cubeStore.ts'
 import { Header } from './ui/Header.tsx'
 import { Hero } from './ui/Hero.tsx'
@@ -18,6 +19,7 @@ export function App() {
   useTimerKeys()
   useEffect(() => warmUpSolverWhenIdle(), [])
   useEffect(() => useSolvedFlash.getState().start(), [])
+  useEffect(() => watchAutoStop({ cube: useCubeStore.getState().cube, timer: useTimerStore }), [])
 
   const mode = usePlayStore((s) => s.mode)
   const solvePhase = usePlayStore((s) => s.solvePhase)

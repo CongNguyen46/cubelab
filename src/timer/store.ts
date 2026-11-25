@@ -15,6 +15,7 @@ type Input =
   | { type: 'button' }
   | { type: 'clickDigits' }
   | { type: 'escape' }
+  | { type: 'solved' }
 
 type TimerStore = {
   timer: TimerState
