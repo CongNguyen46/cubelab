@@ -217,6 +217,16 @@
     color: var(--color-accent);
   }
 
+  /* Inspection countdown (FR-4.3): orange from 8 s, red from 12 s, and +2 after 15 s. */
+  .timer-digits[data-t='inspecting'][data-w='8'] {
+    color: var(--color-accent);
+  }
+
+  .timer-digits[data-t='inspecting'][data-w='12'],
+  .timer-digits[data-t='inspecting'][data-w='15'] {
+    color: var(--color-sticker-r);
+  }
+
   @keyframes timer-in {
     from {
       opacity: 0;
