@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest'
 import {
   applyAlg,
   createCube,
-  formatAlg,
+  formatMove,
   IDENTITY,
   isSolved,
   parseAlg,
@@ -21,9 +21,6 @@ function fakeView(orientation = IDENTITY) {
   const handle: CubeViewHandle = {
     orientationForInput: () => orientation,
     isTurning: () => false,
-    resetView: async () => {
-      calls.push('resetView')
-    },
     whenIdle: () => {
       calls.push('whenIdle')
       return new Promise<void>((r) => (release = r))
@@ -47,25 +44,56 @@ const flush = () => new Promise((r) => setTimeout(r, 0))
 beforeAll(() => initSolver(), 60_000)
 
 describe('Scramble (FR-2)', () => {
-  it('resets the view, starts from solved and plays the scramble at scramble pace', async () => {
+  it('plays on top of the current state, from the current view, at scramble pace', async () => {
     const cube = createCube()
     cube.apply(parseAlg('R U x'))
+    const before = cube.state
     const tempos: (number | undefined)[] = []
     cube.subscribe((e) => e.type === 'moves' && tempos.push(e.tempo))
     const view = fakeView()
     const play = createPlayStore({ cube, solver, view: () => view.handle })
+    play.setState({ line: { kind: 'solved', count: 3 } })
 
     const done = play.getState().scramble()
     await flush()
     expect(play.getState().mode).toBe('scrambling')
-    expect(view.calls).toEqual(['resetView', 'whenIdle'])
-    // Applying the shown scramble to a solved cube gives the state on screen.
-    expect(cube.state).toEqual(applyAlg(createCube().state, SCRAMBLE))
-    expect(play.getState().line).toEqual({ kind: 'scramble', moves: formatAlg(SCRAMBLE) })
+    // No view reset and no cube reset: the scramble continues from what is on screen.
+    expect(view.calls).toEqual(['whenIdle'])
+    expect(cube.state).toEqual(applyAlg(before, SCRAMBLE))
+    expect(cube.history).toEqual([...parseAlg('R U x'), ...SCRAMBLE])
+    // No scramble line: the chips show the moves; the line goes back to the hint.
+    expect(play.getState().line).toEqual({ kind: 'hint' })
     expect(tempos).toEqual([SCRAMBLE_TEMPO])
     view.finish()
     await done
     expect(play.getState().mode).toBe('idle')
+  })
+
+  it('a second Scramble continues from the scrambled cube, and Undo steps back through it', async () => {
+    const cube = createCube()
+    const play = createPlayStore({ cube, solver, view: () => null })
+    await play.getState().scramble()
+    const first = cube.state
+    await play.getState().scramble()
+    expect(cube.state).toEqual(applyAlg(first, SCRAMBLE))
+    expect(cube.history).toHaveLength(2 * SCRAMBLE.length)
+    for (let i = 0; i < SCRAMBLE.length; i++) cube.undo()
+    expect(cube.state).toEqual(first)
+  })
+
+  it("labels the scramble in the viewer's frame when Scramble was pressed", async () => {
+    const cube = createCube()
+    // A y-like view turn: the engine's B face is on the viewer's right.
+    const view = fakeView(rotation('y', -1))
+    const play = createPlayStore({ cube, solver, view: () => view.handle })
+    const done = play.getState().scramble()
+    await flush()
+    const map: Record<string, string> = { B: 'R', R: 'F', F: 'L', L: 'B', U: 'U', D: 'D' }
+    cube.history.forEach((m, i) => {
+      expect(cube.labels[i]).toBe(map[m.base] + formatMove(m).slice(1))
+    })
+    view.finish()
+    await done
   })
 
   it('tapping Scramble again skips to the end', async () => {

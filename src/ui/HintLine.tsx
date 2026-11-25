@@ -4,7 +4,7 @@ import { usePlayStore } from './playStore.ts'
 
 /**
  * The one slot under the cube. It holds the timer digits while the timer is shown (FR-4.1),
- * otherwise one line: the timer hint, the scramble in notation, or "Solved in N moves" with N
+ * otherwise one line: the timer hint, or "Solved in N moves" with N
  * in Lab Orange (FR-3.4).
  */
 export function HintLine() {
@@ -26,11 +26,6 @@ export function HintLine() {
                 Space
               </span>{' '}
               to start the timer
-            </>
-          )}
-          {line.kind === 'scramble' && (
-            <>
-              Scramble <b className="font-medium text-text">{line.moves}</b>
             </>
           )}
           {line.kind === 'solved' && (

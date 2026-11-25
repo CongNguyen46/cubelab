@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import {
-  formatAlg,
   formatMove,
   IDENTITY,
   isSolved,
@@ -22,10 +21,7 @@ export type PlayMode = 'idle' | 'scrambling' | 'solving'
 export type SolvePhase = 'idle' | 'busy' | 'ok'
 /** The line under the cube. */
 export type Line =
-  | { kind: 'hint' }
-  | { kind: 'scramble'; moves: string }
-  | { kind: 'solved'; count: number }
-  | { kind: 'error'; text: string }
+  { kind: 'hint' } | { kind: 'solved'; count: number } | { kind: 'error'; text: string }
 
 type Solver = {
   solve(state: CubeState): Promise<Move[]>
@@ -70,16 +66,16 @@ export function createPlayStore(deps: PlayDeps) {
       // Tapping Scramble again while it plays jumps to the scrambled state.
       if (mode === 'scrambling') return view()?.skip()
       if (mode !== 'idle') return
-      set({ mode: 'scrambling' })
+      set({ mode: 'scrambling', line: { kind: 'hint' } })
+      // Chips name the moves as the viewer saw the cube when Scramble was pressed, like keys do.
+      const orientation = view()?.orientationForInput() ?? IDENTITY
       try {
         const moves = await solver.scramble()
-        const v = view()
-        // Back to white up, green front first, so the scramble text matches what you see.
-        await v?.resetView()
-        cube.reset()
-        cube.apply(moves, { tempo: SCRAMBLE_TEMPO })
-        set({ line: { kind: 'scramble', moves: formatAlg(moves) } })
-        await v?.whenIdle()
+        // On top of the current state, from the current view. A random-state scramble applied
+        // to any state still gives a uniformly random state, and Undo can step back through it.
+        const labels = moves.map((m) => formatMove(remapMove(m, orientation)))
+        cube.apply(moves, { tempo: SCRAMBLE_TEMPO, labels })
+        await view()?.whenIdle()
       } catch {
         deps.onError?.('Could not make a scramble. Try again.')
       } finally {
