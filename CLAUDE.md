@@ -19,7 +19,7 @@ Owner: Cong Bao Nguyen (GitHub `CongNguyen46`). Solo personal project, no deadli
 - Sprint 2a done: drag-to-turn, whole-cube drag with settle-to-24, auto-spin, double-click reset, hero (LED word, glow, floor reflection, shadow), full-screen menu.
 - Sprint 2b done: two-phase solver (vendored cubejs) in a Web Worker, Scramble and animated Solve with the loading-to-done button. **Milestone: core MVP.**
 - Sprint 3a done: inline timer (state machine in `src/timer`), Space, Timer button, Esc, touch pad, input locks.
-- Homepage fixes after testing (fix/homepage-behaviour): home view, Scramble from the current state and view, view drags during playback, no Reset, fixed Undo, no scramble line, solved message over the timer.
+- Homepage fixes after testing (fix/homepage-behaviour): home view, Scramble from the current state and view, view drags during playback, no Reset, fixed Undo, no scramble line, solved message over the timer, solving the on-screen cube while the timer runs with auto-stop.
 - Next is **Sprint 3b**: inspection, new scramble after each solve, session panel, Dexie storage.
 
 Engine notes:
@@ -41,7 +41,12 @@ Timer notes:
 
 - `src/timer/machine.ts` is a pure reducer ported from the prototype; the store stamps events with `performance.now()` and schedules the 150 ms and 400 ms ticks.
 - Space is handled in the capture phase and always `preventDefault`ed, so it never scrolls, clicks a focused button or reaches the cube keys.
-- Locks live in `ui/playStore.ts`. `inputLocked(pointerType?)`: Scramble/Solve playing or the timer held/running locks keys, Undo, the buttons and the menu. On the canvas, `pointerLocked` locks only for the timer (held/running, or touch while the digits show), and `turnsLocked` (Scramble/Solve playing) turns every drag into a view drag, so you can turn the whole cube while the moves play. Move labels are fixed when the play starts, so a view drag mid-play does not change them.
+- The timer times a solve of the on-screen cube. Locks live in `ui/playStore.ts`:
+  - While the timer is held (grey or mint, before release), cube keys, Undo and every drag wait (`inputLocked`, `pointerLocked`), so a hold is not spoiled by a turn.
+  - While it runs, keys, layer drags, view drags and Undo work. Space stops it, Esc discards it. Scramble, Solve and the menu stay locked (`isActive`).
+  - Scramble/Solve playing locks keys and Undo; `turnsLocked` turns every drag into a view drag, so you can turn the whole cube while the moves play. Move labels are fixed when the play starts.
+  - Touch on the cube always turns the cube. Only the digits are a touch pad: hold to start, tap to stop.
+- Auto-stop (`ui/autoStop.ts`): if the cube was unsolved when the timer started and becomes solved during the run, the timer stops when the engine applies the last move (its `moves` event, before the animation), and that time is the result. Not armed when started on a solved cube; Esc disarms it.
 - After a Solve with the digits shown (idle or stopped), "Solved in N moves" covers them for 1.5 s, then they fade back (`ui/solvedFlash.ts`). Any timer input ends it.
 - Esc while running discards the solve (no result).
 
