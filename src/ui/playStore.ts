@@ -1,4 +1,5 @@
 import { solver } from '../solver/client.ts'
+import { isActive, isShown, useTimerStore } from '../timer/index.ts'
 import { useCubeStore } from './cubeStore.ts'
 import { createPlayStore } from './play.ts'
 import { useUiStore } from './uiStore.ts'
@@ -12,8 +13,16 @@ export const usePlayStore = createPlayStore({
   onError: (text) => useUiStore.getState().showToast(text),
 })
 
-/** True while Scramble or Solve is playing: keys, drags, undo and reset wait. */
-export const inputLocked = () => usePlayStore.getState().mode !== 'idle'
+/**
+ * True while the page owns input: Scramble or Solve playing, or the timer held or running. Keys,
+ * drags, undo and reset wait. With `pointerType` 'touch', also true while the timer digits are
+ * shown, because the cube area is then a pad for the timer.
+ */
+export function inputLocked(pointerType?: string): boolean {
+  const { timer } = useTimerStore.getState()
+  if (usePlayStore.getState().mode !== 'idle' || isActive(timer)) return true
+  return pointerType === 'touch' && isShown(timer)
+}
 
 /** Build the solver tables while the page is idle, so the first Solve is quick (NFR-3). */
 export function warmUpSolverWhenIdle() {

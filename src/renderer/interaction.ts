@@ -51,8 +51,11 @@ export type InteractionDeps = {
   animator: TurnAnimator
   cube: Cube
   reduceMotion: () => boolean
-  /** True while Scramble or Solve is playing: pointer input is ignored. */
-  inputLocked?: () => boolean
+  /**
+   * True when the page owns pointer input right now (Scramble or Solve playing, the timer
+   * running, or touch while the timer digits are shown). Gets the pointer type.
+   */
+  inputLocked?: (pointerType: string) => boolean
 }
 
 /**
@@ -134,7 +137,7 @@ export class CubeInteraction {
 
   private onDown = (e: PointerEvent) => {
     if (this.drag || this.snap || (e.pointerType === 'mouse' && e.button !== 0)) return
-    if (this.deps.inputLocked?.()) return
+    if (this.deps.inputLocked?.(e.pointerType)) return
     const { view, animator, dom } = this.deps
     view.stopAutoSpin()
     const at = this.pointer(e)
@@ -238,6 +241,6 @@ export class CubeInteraction {
   }
 
   private onDoubleClick = () => {
-    if (!this.drag && !this.deps.inputLocked?.()) void this.deps.view.reset()
+    if (!this.drag && !this.deps.inputLocked?.('mouse')) void this.deps.view.reset()
   }
 }

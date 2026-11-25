@@ -57,8 +57,8 @@ type Props = {
   onGlow?: (colour: Color) => void
   /** Called once the cube is ready, with the handle the page uses for input. */
   onReady?: (handle: CubeViewHandle | null) => void
-  /** True while Scramble or Solve is playing: pointer input is ignored. */
-  inputLocked?: () => boolean
+  /** True when the page owns pointer input (see InteractionDeps.inputLocked). */
+  inputLocked?: (pointerType: string) => boolean
 }
 
 export function CubeModel({ cube, turnMs = 200, onGlow, onReady, inputLocked }: Props) {

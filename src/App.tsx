@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { isActive, isShown, useTimerStore } from './timer/index.ts'
 import { useCubeStore } from './ui/cubeStore.ts'
 import { Header } from './ui/Header.tsx'
 import { Hero } from './ui/Hero.tsx'
@@ -10,9 +11,11 @@ import { usePlayStore, warmUpSolverWhenIdle } from './ui/playStore.ts'
 import { SolveButton } from './ui/SolveButton.tsx'
 import { ScrambleIcon, TimerIcon } from './ui/icons.tsx'
 import { useCubeKeys } from './ui/useCubeKeys.ts'
+import { useTimerKeys } from './ui/useTimerKeys.ts'
 
 export function App() {
   useCubeKeys()
+  useTimerKeys()
   useEffect(() => warmUpSolverWhenIdle(), [])
 
   const mode = usePlayStore((s) => s.mode)
@@ -20,6 +23,10 @@ export function App() {
   const scramble = usePlayStore((s) => s.scramble)
   const solve = usePlayStore((s) => s.solve)
   const solved = useCubeStore((s) => s.solved)
+  const timer = useTimerStore((s) => s.timer)
+  const sendTimer = useTimerStore((s) => s.send)
+  // Scramble and Solve wait while the timer is held or running.
+  const timing = isActive(timer)
 
   return (
     <div className="flex min-h-full flex-col">
@@ -32,7 +39,7 @@ export function App() {
           <PillButton
             icon={<ScrambleIcon />}
             onClick={() => void scramble()}
-            disabled={mode === 'solving'}
+            disabled={mode === 'solving' || timing}
             aria-label={mode === 'scrambling' ? 'Skip to the scrambled cube' : 'Scramble'}
           >
             Scramble
@@ -40,12 +47,27 @@ export function App() {
           {/* While a solve plays, tapping Solve again skips to solved (FR-3.3). */}
           <SolveButton
             phase={solvePhase}
-            disabled={mode === 'scrambling' || (mode === 'idle' && solvePhase === 'idle' && solved)}
-            disabledReason={solved ? 'Already solved' : 'Wait for the scramble to finish'}
+            disabled={
+              timing ||
+              mode === 'scrambling' ||
+              (mode === 'idle' && solvePhase === 'idle' && solved)
+            }
+            disabledReason={
+              timing
+                ? 'Stop the timer first'
+                : solved
+                  ? 'Already solved'
+                  : 'Wait for the scramble to finish'
+            }
             onClick={() => void solve()}
           />
-          {/* The timer arrives in Sprint 3. */}
-          <PillButton icon={<TimerIcon />} disabled>
+          {/* Timer button cycles start, stop, hide (FR-4.1). */}
+          <PillButton
+            icon={<TimerIcon />}
+            onClick={() => sendTimer({ type: 'button' })}
+            disabled={mode !== 'idle'}
+            aria-pressed={isShown(timer)}
+          >
             Timer
           </PillButton>
         </div>
