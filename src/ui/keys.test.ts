@@ -65,7 +65,7 @@ describe('cube store', () => {
     expect(s().canRedo).toBe(true)
     s().redo()
     expect(formatAlg(s().cube.history)).toBe("R U'")
-    s().reset()
+    s().cube.reset() // engine reset, kept for internal use; the store follows its event
     expect(s().history).toEqual([])
     expect(s().solved).toBe(true)
     expect(s().canUndo).toBe(false)

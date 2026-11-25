@@ -44,8 +44,6 @@ export type PlayStore = {
   line: Line
   scramble: () => Promise<void>
   solve: () => Promise<void>
-  /** Back to the hint line, for example after Reset. */
-  clearLine: () => void
 }
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -59,7 +57,6 @@ export function createPlayStore(deps: PlayDeps) {
     mode: 'idle',
     solvePhase: 'idle',
     line: { kind: 'hint' },
-    clearLine: () => set({ line: { kind: 'hint' } }),
 
     async scramble() {
       const { mode } = get()

@@ -1,5 +1,5 @@
 import { useCubeStore } from './cubeStore.ts'
-import { ResetIcon, UndoIcon } from './icons.tsx'
+import { UndoIcon } from './icons.tsx'
 import { inputLocked, usePlayStore } from './playStore.ts'
 import { useUiStore } from './uiStore.ts'
 import { isActive, useTimerStore } from '../timer/index.ts'
@@ -9,23 +9,16 @@ const SHOWN = 10
 const iconButton =
   'inline-grid size-11 cursor-pointer place-items-center rounded-xl border border-border bg-transparent text-text-subtle transition-colors duration-200 ease-lab hover:text-text disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-text-subtle'
 
-/** The last few moves as chips (FR-1.6), with Undo and Reset (FR-1.5). */
+/** The last few moves as chips (FR-1.6), with Undo (FR-1.5). Reset was removed by decision. */
 export function MoveHistory() {
   const history = useCubeStore((s) => s.history)
   const canUndo = useCubeStore((s) => s.canUndo)
   const undoMove = useCubeStore((s) => s.undo)
-  const resetCube = useCubeStore((s) => s.reset)
   // Wait for a dragged layer to land before changing the cube.
   const timerActive = useTimerStore((s) => isActive(s.timer))
   const idle = () => !useUiStore.getState().view?.isTurning() && !inputLocked()
   const playing = usePlayStore((s) => s.mode !== 'idle') || timerActive
-  const clearLine = usePlayStore((s) => s.clearLine)
   const undo = () => idle() && undoMove()
-  const reset = () => {
-    if (!idle()) return
-    resetCube()
-    clearLine()
-  }
   const shown = history.slice(-SHOWN)
   const offset = history.length - shown.length
 
@@ -61,15 +54,6 @@ export function MoveHistory() {
             aria-label="Undo last move"
           >
             <UndoIcon />
-          </button>
-          <button
-            type="button"
-            className={iconButton}
-            onClick={reset}
-            disabled={playing}
-            aria-label="Reset to solved"
-          >
-            <ResetIcon />
           </button>
         </>
       )}

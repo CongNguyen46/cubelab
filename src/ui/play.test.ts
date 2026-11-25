@@ -230,11 +230,4 @@ describe('Solve (FR-3)', () => {
     expect(onError).toHaveBeenCalledWith('Could not solve this cube. Try again.')
     expect(play.getState()).toMatchObject({ mode: 'idle', solvePhase: 'idle' })
   })
-
-  it('clearLine goes back to the hint', () => {
-    const play = createPlayStore({ cube: createCube(), solver, view: () => null })
-    play.setState({ line: { kind: 'solved', count: 3 } })
-    play.getState().clearLine()
-    expect(play.getState().line).toEqual({ kind: 'hint' })
-  })
 })

@@ -15,7 +15,7 @@ export const usePlayStore = createPlayStore({
 
 /**
  * True while the page owns input: Scramble or Solve playing, or the timer held or running. Keys,
- * drags, undo and reset wait. With `pointerType` 'touch', also true while the timer digits are
+ * drags and undo wait. With `pointerType` 'touch', also true while the timer digits are
  * shown, because the cube area is then a pad for the timer.
  */
 export function inputLocked(pointerType?: string): boolean {
