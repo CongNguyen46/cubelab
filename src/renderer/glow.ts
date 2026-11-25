@@ -16,8 +16,12 @@ const NORMALS: readonly [number, number, number][] = [
 /** Engine ids of the six centre cubies, in face order R L U D F B. */
 export const CENTRE_IDS = NORMALS.map((n) => cubieId(n))
 
-/** Another face must face the camera this much more squarely before the glow switches. */
-export const GLOW_HYSTERESIS = 0.12
+/**
+ * Another face must face the camera this much more squarely before the glow switches. Below 0.113,
+ * the margin between the front and side face in any settled view, so the front face always wins
+ * once the cube settles (for example after double-click back home).
+ */
+export const GLOW_HYSTERESIS = 0.1
 
 /**
  * Which face colour the glow should show. `scores` is how squarely each face's centre faces the
@@ -44,9 +48,9 @@ export const glowBlend = (dt: number) => 1 - Math.pow(0.002, dt)
  * not cube-local axes, so slice moves and whole-cube turns are handled for free.
  */
 export class GlowTracker {
-  /** Current face index, R L U D F B. Starts on green, the front. */
-  face = 4
-  readonly colour = new Color(FACE_COLOURS[4])
+  /** Current face index, R L U D F B. Starts on orange (L), the face toward the camera at home. */
+  face = 1
+  readonly colour = new Color(FACE_COLOURS[1])
   private readonly target = new Color()
   private readonly p = new Vector3()
   private readonly camDir = new Vector3()

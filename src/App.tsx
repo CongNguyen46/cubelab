@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { isActive, isShown, useTimerStore } from './timer/index.ts'
+import { watchAutoStop } from './ui/autoStop.ts'
 import { useCubeStore } from './ui/cubeStore.ts'
 import { Header } from './ui/Header.tsx'
 import { Hero } from './ui/Hero.tsx'
@@ -7,7 +8,7 @@ import { HintLine } from './ui/HintLine.tsx'
 import { Menu, Toast } from './ui/Menu.tsx'
 import { MoveHistory } from './ui/MoveHistory.tsx'
 import { PillButton } from './ui/PillButton.tsx'
-import { usePlayStore, warmUpSolverWhenIdle } from './ui/playStore.ts'
+import { usePlayStore, useSolvedFlash, warmUpSolverWhenIdle } from './ui/playStore.ts'
 import { SolveButton } from './ui/SolveButton.tsx'
 import { ScrambleIcon, TimerIcon } from './ui/icons.tsx'
 import { useCubeKeys } from './ui/useCubeKeys.ts'
@@ -17,6 +18,8 @@ export function App() {
   useCubeKeys()
   useTimerKeys()
   useEffect(() => warmUpSolverWhenIdle(), [])
+  useEffect(() => useSolvedFlash.getState().start(), [])
+  useEffect(() => watchAutoStop({ cube: useCubeStore.getState().cube, timer: useTimerStore }), [])
 
   const mode = usePlayStore((s) => s.mode)
   const solvePhase = usePlayStore((s) => s.solvePhase)

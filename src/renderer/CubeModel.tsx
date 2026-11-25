@@ -14,14 +14,12 @@ export const MODEL_URL = '/models/cubelab_cube.glb'
 
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches
 
-/** What the page needs from the 3D view: input orientation, turn state, and view reset. */
+/** What the page needs from the 3D view: input orientation, turn state and playback. */
 export type CubeViewHandle = {
   /** Engine frame to view frame, one of the 24 rotations. Stops the auto-spin. */
   orientationForInput(): Mat3
   /** A layer is being dragged or snapping: keyboard turns should wait. */
   isTurning(): boolean
-  /** Ease back to the starting view (white up, green front). Resolves once it is there. */
-  resetView(): Promise<void>
   /** Resolves when every queued turn has played. */
   whenIdle(): Promise<void>
   /** Jump to the end of whatever is playing. */
@@ -59,9 +57,18 @@ type Props = {
   onReady?: (handle: CubeViewHandle | null) => void
   /** True when the page owns pointer input (see InteractionDeps.inputLocked). */
   inputLocked?: (pointerType: string) => boolean
+  /** True while only the view may be dragged (see InteractionDeps.turnsLocked). */
+  turnsLocked?: () => boolean
 }
 
-export function CubeModel({ cube, turnMs = 200, onGlow, onReady, inputLocked }: Props) {
+export function CubeModel({
+  cube,
+  turnMs = 200,
+  onGlow,
+  onReady,
+  inputLocked,
+  turnsLocked,
+}: Props) {
   const { scene } = useGLTF(MODEL_URL)
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
@@ -96,8 +103,9 @@ export function CubeModel({ cube, turnMs = 200, onGlow, onReady, inputLocked }: 
         cube,
         reduceMotion,
         inputLocked,
+        turnsLocked,
       }),
-    [gl, camera, view, root, views, animator, cube, inputLocked],
+    [gl, camera, view, root, views, animator, cube, inputLocked, turnsLocked],
   )
   useEffect(() => interaction.attach(), [interaction])
 
@@ -105,7 +113,6 @@ export function CubeModel({ cube, turnMs = 200, onGlow, onReady, inputLocked }: 
     onReady?.({
       orientationForInput: () => view.orientationForInput(),
       isTurning: () => interaction.turning,
-      resetView: () => view.reset(),
       whenIdle: () => animator.whenIdle(),
       skip: () => animator.skip(),
     })

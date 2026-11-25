@@ -2,7 +2,10 @@ import type { PointerEvent } from 'react'
 import { isShown } from './machine.ts'
 import { useTimerStore } from './store.ts'
 
-/** Touch handlers that make an element act like Space while the digits are shown. */
+/**
+ * Touch handlers that make the timer digits act like Space while they are shown: hold to start,
+ * tap to stop. Only the digits use it; touch on the cube always turns the cube.
+ */
 export function useTimerPad() {
   const send = useTimerStore((s) => s.send)
   const shown = useTimerStore((s) => isShown(s.timer))

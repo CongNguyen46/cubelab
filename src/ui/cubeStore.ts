@@ -12,7 +12,6 @@ type CubeStore = {
   apply: (moves: readonly Move[], options?: ApplyOptions) => void
   undo: () => void
   redo: () => void
-  reset: () => void
 }
 
 /** React-facing view of one engine cube. The engine stays the source of truth. */
@@ -31,7 +30,6 @@ export function createCubeStore(cube: Cube = createCube()) {
       apply: (moves, options) => cube.apply(moves, options),
       undo: () => cube.undo(),
       redo: () => cube.redo(),
-      reset: () => cube.reset(),
     }
   })
 }

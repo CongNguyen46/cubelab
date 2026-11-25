@@ -106,6 +106,17 @@ describe('stopping', () => {
     expect(displayMs(state, 99_999)).toBe(10_000)
   })
 
+  it('the cube becoming solved stops a running timer (auto-stop), and nothing else', () => {
+    const { state, results } = run([{ type: 'solved', now: 7_500 }], running)
+    expect(results).toEqual([7_000])
+    expect(state.phase).toBe('stopped')
+    expect(state.swallowRelease).toBe(false)
+    for (const phase of ['hidden', 'idle', 'hold', 'ready', 'stopped'] as const) {
+      const other = { ...initialTimer, phase }
+      expect(timerReducer(other, { type: 'solved', now: 1 })).toEqual({ state: other })
+    }
+  })
+
   it('a second hold from stopped shows grey straight away, and an early release keeps the time', () => {
     const stopped = run([press(3500), release(3600)], running).state
     let s = run([press(5000)], stopped).state

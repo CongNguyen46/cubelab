@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { isShown, useTimerStore } from '../timer/index.ts'
+import { useTimerStore } from '../timer/index.ts'
 import { usePlayStore } from './playStore.ts'
 import { useUiStore } from './uiStore.ts'
 
@@ -42,6 +42,3 @@ export function useTimerKeys() {
     }
   }, [])
 }
-
-/** The digits are on screen: touch on the cube area and the digits drives the timer. */
-export const timerPadActive = () => isShown(useTimerStore.getState().timer)

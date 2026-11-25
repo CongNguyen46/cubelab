@@ -19,6 +19,7 @@ Owner: Cong Bao Nguyen (GitHub `CongNguyen46`). Solo personal project, no deadli
 - Sprint 2a done: drag-to-turn, whole-cube drag with settle-to-24, auto-spin, double-click reset, hero (LED word, glow, floor reflection, shadow), full-screen menu.
 - Sprint 2b done: two-phase solver (vendored cubejs) in a Web Worker, Scramble and animated Solve with the loading-to-done button. **Milestone: core MVP.**
 - Sprint 3a done: inline timer (state machine in `src/timer`), Space, Timer button, Esc, touch pad, input locks.
+- Homepage fixes after testing (fix/homepage-behaviour): home view, Scramble from the current state and view, view drags during playback, no Reset, fixed Undo, no scramble line, solved message over the timer, solving the on-screen cube while the timer runs with auto-stop.
 - Next is **Sprint 3b**: inspection, new scramble after each solve, session panel, Dexie storage.
 
 Engine notes:
@@ -33,21 +34,29 @@ Solver notes:
 - cubejs 1.3.2 is vendored in `src/solver/vendor/` (its npm package depends on npm@6). See the README there for the three ES-module patches. Excluded from lint, Prettier and coverage.
 - The page imports only `solver/client.ts` and `solver/shorter.ts`. Importing `solver/core.ts` or `solver/index.ts` from page code would pull the solver into the first bundle.
 - Two-phase is not optimal near solved (a single R gets 8 moves), so Solve plays the shorter of the solver answer and the undone history. History always starts from solved.
-- Scramble resets the cube to solved and eases the view home first, so the scramble text reproduces the state on screen.
+- Scramble plays on top of the current state, from the current view: no cube reset, no view reset. Its moves go into the history (Undo steps back through them) with labels in the viewer's frame at the moment Scramble was pressed. There is no scramble text line; the chips show the moves.
 - `npm run test:slow` runs the 1,000-state FR-3 acceptance (about 100 s). CI runs it on pushes to main only; normal runs check 200 states.
 
 Timer notes:
 
 - `src/timer/machine.ts` is a pure reducer ported from the prototype; the store stamps events with `performance.now()` and schedules the 150 ms and 400 ms ticks.
 - Space is handled in the capture phase and always `preventDefault`ed, so it never scrolls, clicks a focused button or reaches the cube keys.
-- `inputLocked(pointerType?)` in `ui/playStore.ts` is the one lock: Scramble/Solve playing or the timer held/running locks keys, drags, undo, reset and the menu. While the digits show, touch on the cube area belongs to the timer; mouse still turns the cube.
+- The timer times a solve of the on-screen cube. Locks live in `ui/playStore.ts`:
+  - While the timer is held (grey or mint, before release), cube keys, Undo and every drag wait (`inputLocked`, `pointerLocked`), so a hold is not spoiled by a turn.
+  - While it runs, keys, layer drags, view drags and Undo work. Space stops it, Esc discards it. Scramble, Solve and the menu stay locked (`isActive`).
+  - Scramble/Solve playing locks keys and Undo; `turnsLocked` turns every drag into a view drag, so you can turn the whole cube while the moves play. Move labels are fixed when the play starts.
+  - Touch on the cube always turns the cube. Only the digits are a touch pad: hold to start, tap to stop.
+- Auto-stop (`ui/autoStop.ts`): if the cube was unsolved when the timer started and becomes solved during the run, the timer stops when the engine applies the last move (its `moves` event, before the animation), and that time is the result. Not armed when started on a solved cube; Esc disarms it.
+- After a Solve with the digits shown (idle or stopped), "Solved in N moves" covers them for 1.5 s, then they fade back (`ui/solvedFlash.ts`). Any timer input ends it.
 - Esc while running discards the solve (no result).
 
 View and input notes:
 
 - The whole-cube view (`ViewController`) is a view rotation only. The engine never sees it.
+- Home view (`HOME_VIEW`): white up, the orange (L) face toward the camera, a quarter turn about y from the engine frame (white up, green front). The page loads there and double-click returns there. The glow starts on orange (CSS default and `GlowTracker`), so the first frame is orange.
+- Glow hysteresis is 0.1, below the 0.113 margin between the front and side face in a settled view, so the front face always wins once the cube settles.
 - Keys name faces in the viewer's frame: R is the face on your right. The key move is mapped through the settled view to an engine move. History stores the engine move plus a display label (what the user pressed, or a drag named in the view frame); chips show the label, undo uses the engine move.
-- A finished drag goes to the engine with `{ animated: true }`, so the animator only syncs instead of turning the layer again. Keyboard turns, undo and reset wait while a layer is being dragged.
+- A finished drag goes to the engine with `{ animated: true }`, so the animator only syncs instead of turning the layer again. Keyboard turns and undo wait while a layer is being dragged.
 - With current three.js, set `envMap` on each material. If only `scene.environment` is set, three ignores the per-material `envMapIntensity` and the tiles wash out. Light intensities are the prototype's times PI (legacy to physical units).
 
 ## Decisions that override the requirements doc
@@ -61,8 +70,9 @@ These were made during design. If the doc and this list disagree, this list wins
   - Idle hint line: "Hold [Space] to start the timer", with the Space key chip in orange.
 - **Solve result** is the line "Solved in N moves" with N in Lab Orange. No toast.
 - **Solve button** is Lab Orange `#FF6A1A` with a loading-to-done animation and a mint `#7EE8C0` done state. Measure its width only on click and reset to auto after.
-- **Whole-cube drag** settles to the nearest of the 24 axis-aligned orientations, so the cube never stays tilted and any face can be brought to the top. Dragging a face turns that layer. Double-click resets the view.
+- **Whole-cube drag** settles to the nearest of the 24 axis-aligned orientations, so the cube never stays tilted and any face can be brought to the top. Dragging a face turns that layer. Double-click resets the view to home (white up, orange front).
 - **Hero**: LED-style "CUBELAB" word behind the cube (solid, lit from one side), and a glow that follows the colour of the centre piece facing the camera. Compute the glow from the real centre pieces' world positions, not from cube-local axes (slice moves break that).
+- **Under the cube**: the move chips and Undo only, no Reset. The chips sit in a fixed-width track (10 chips, 6 below 640 px), newest next to Undo, so Undo never moves. With no history Undo fades out but keeps its place.
 - **Header**: Grid C v0.2 logo plus a hamburger that opens a full-screen menu.
 - Fonts: Geist and Geist Mono.
 

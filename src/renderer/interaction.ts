@@ -52,16 +52,21 @@ export type InteractionDeps = {
   cube: Cube
   reduceMotion: () => boolean
   /**
-   * True when the page owns pointer input right now (Scramble or Solve playing, the timer
-   * running, or touch while the timer digits are shown). Gets the pointer type.
+   * True when the page owns pointer input right now (the timer held or running, or touch while
+   * the timer digits are shown). Gets the pointer type. Nothing on the canvas reacts.
    */
   inputLocked?: (pointerType: string) => boolean
+  /**
+   * True while Scramble or Solve plays: layer turns wait, but dragging still turns the view, even
+   * when the drag starts on a face. The engine and the move queue never see a view drag.
+   */
+  turnsLocked?: () => boolean
 }
 
 /**
  * Pointer input on the canvas, ported from the prototype. Dragging a face turns its layer and the
  * finished turn goes to the engine as a normal move. Dragging empty space turns the view, and a
- * double-click resets it. Mouse and touch both arrive as pointer events.
+ * double-click resets it. While moves are playing (or turns are locked) every drag turns the view. Mouse and touch both arrive as pointer events.
  */
 export class CubeInteraction {
   private drag: TurnDrag | SpinDrag | null = null
@@ -148,7 +153,7 @@ export class CubeInteraction {
     let cubie: Object3D | null = hit?.object ?? null
     while (cubie && !this.cubies.has(cubie)) cubie = cubie.parent
 
-    if (hit?.face && cubie && !animator.busy) {
+    if (hit?.face && cubie && !animator.busy && !this.deps.turnsLocked?.()) {
       // Face normal in the cube's own frame, which is the engine frame.
       const n = hit.face.normal
         .clone()

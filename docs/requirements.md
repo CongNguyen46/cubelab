@@ -85,7 +85,7 @@ Each feature has a user story, numbered requirements and acceptance criteria. Th
 - **FR-1.2** Drag on a face to turn that layer. Drag on the background to rotate the whole cube; on release it settles to the nearest of the 24 axis-aligned orientations **(updated)**. Support mouse and touch.
 - **FR-1.3** Accept keyboard moves in standard notation: R, U, F, L, D, B, their inverses and double turns, slice moves M, E, S and cube rotations x, y, z.
 - **FR-1.4** Animate each turn and snap it to 90 degrees. Animation speed is adjustable.
-- **FR-1.5** Provide undo, redo and reset to solved.
+- **FR-1.5** Provide undo and redo (reset removed from the UI by decision).
 - **FR-1.6** Show the move history in notation under the cube.
 
 Acceptance: a turn finishes in 200 ms or less at default speed. After any move sequence, the rendered cube matches the engine's state, checked by automated tests.
