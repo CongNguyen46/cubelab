@@ -3,7 +3,13 @@ import { describe, expect, it } from 'vitest'
 import { formatMove, IDENTITY, rotation } from '../engine/index.ts'
 import { moveForLayerTurn, pickDragAxis, snapAxis, snapQuarterTurns } from './drag.ts'
 import { CENTRE_IDS, GlowTracker, glowBlend, GLOW_HYSTERESIS, pickGlowFace } from './glow.ts'
-import { nearestOrientation, quaternionToMat3, SPIN_PER_PIXEL, ViewController } from './view.ts'
+import {
+  HOME_VIEW,
+  nearestOrientation,
+  quaternionToMat3,
+  SPIN_PER_PIXEL,
+  ViewController,
+} from './view.ts'
 
 const deg = (d: number) => (d * Math.PI) / 180
 const RIGHT = new Vector3(1, 0, 0)
@@ -81,21 +87,35 @@ describe('view orientation', () => {
   })
 })
 
+/** Home: a quarter turn about y, so the engine's L face is toward the camera. */
+const HOME = rotation('y', 1)
+const yTurn = (d: number) => new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), deg(d))
+
 describe('ViewController', () => {
   const settle = (view: ViewController) => {
     for (let i = 0; i < 300 && !view.settled; i++) view.update(1 / 60)
   }
 
+  it('starts at home: white up, the orange (L) face toward the camera', () => {
+    const view = new ViewController({ reduceMotion: () => true })
+    const home = quaternionToMat3(view.group.quaternion)
+    expect(home).toEqual(HOME)
+    // The engine's L face (-x) is turned to the camera side (+z); U stays up.
+    const l = new Vector3(-1, 0, 0).applyQuaternion(view.group.quaternion)
+    expect(l.z).toBeCloseTo(1)
+    expect(new Vector3(0, 1, 0).applyQuaternion(view.group.quaternion).y).toBeCloseTo(1)
+  })
+
   it('auto-spins until the first input, then settles upright', () => {
     const view = new ViewController()
     expect(view.spinning).toBe(true)
     view.update(1)
-    expect(view.group.quaternion.angleTo(new Quaternion())).toBeGreaterThan(0.3)
-    expect(view.orientationForInput()).toEqual(IDENTITY) // 0.35 rad is still nearest the start
+    expect(view.group.quaternion.angleTo(HOME_VIEW)).toBeGreaterThan(0.3)
+    expect(view.orientationForInput()).toEqual(HOME) // 0.35 rad is still nearest home
     expect(view.spinning).toBe(false)
     settle(view)
     expect(view.settled).toBe(true)
-    expect(quaternionToMat3(view.group.quaternion)).toEqual(IDENTITY)
+    expect(quaternionToMat3(view.group.quaternion)).toEqual(HOME)
   })
 
   it('settles to the nearest of the 24 after a drag', () => {
@@ -104,19 +124,20 @@ describe('ViewController', () => {
     view.dragBy(deg(100) / SPIN_PER_PIXEL, 0, RIGHT)
     expect(view.settled).toBe(false)
     view.endDrag()
-    expect(view.orientationForInput()).toEqual(rotation('y', 1))
+    // Home is a quarter turn about y; 100 degrees more settles on the half turn.
+    expect(view.orientationForInput()).toEqual(quaternionToMat3(yTurn(180)))
     settle(view)
     expect(view.settled).toBe(true)
   })
 
-  it('reset eases back to the starting view', () => {
+  it('reset (double-click) goes back to home', () => {
     const view = new ViewController({ reduceMotion: () => true })
     view.beginDrag()
     view.dragBy(deg(-90) / SPIN_PER_PIXEL, 0, RIGHT)
     view.endDrag()
-    expect(quaternionToMat3(view.group.quaternion)).toEqual(rotation('y', -1))
-    view.reset()
     expect(quaternionToMat3(view.group.quaternion)).toEqual(IDENTITY)
+    view.reset()
+    expect(quaternionToMat3(view.group.quaternion)).toEqual(HOME)
     expect(view.settled).toBe(true)
   })
 
@@ -127,7 +148,7 @@ describe('ViewController', () => {
     view.dragBy(deg(30) / SPIN_PER_PIXEL, deg(-20) / SPIN_PER_PIXEL, RIGHT)
     view.endDrag()
     expect(view.settled).toBe(true)
-    expect(quaternionToMat3(view.group.quaternion)).toEqual(IDENTITY)
+    expect(quaternionToMat3(view.group.quaternion)).toEqual(HOME)
   })
 })
 
@@ -168,6 +189,9 @@ describe('glow', () => {
     })
     root.updateMatrixWorld(true)
     const glow = new GlowTracker()
+    // Starts on orange, the face toward the camera at home.
+    expect(glow.face).toBe(1)
+    expect(glow.colour.getHex()).toBe(0xff8a1c)
     const camera = new Vector3(10, 0, 1)
     glow.update(centres, camera, 0.016, true)
     expect(glow.face).toBe(0) // red faces the camera
@@ -181,7 +205,7 @@ describe('glow', () => {
 })
 
 describe('ViewController.reset as a promise', () => {
-  it('resolves once the view is back at the start', async () => {
+  it('resolves once the view is back at home', async () => {
     const view = new ViewController()
     view.beginDrag()
     view.dragBy(deg(120) / SPIN_PER_PIXEL, 0, RIGHT)
@@ -193,7 +217,7 @@ describe('ViewController.reset as a promise', () => {
     expect(done).toBe(false)
     for (let i = 0; i < 300 && !view.settled; i++) view.update(1 / 60)
     await p
-    expect(quaternionToMat3(view.group.quaternion)).toEqual(IDENTITY)
+    expect(quaternionToMat3(view.group.quaternion)).toEqual(HOME)
   })
 
   it('resolves at once with reduced motion, and whenSettled resolves at once when still', async () => {
@@ -203,6 +227,6 @@ describe('ViewController.reset as a promise', () => {
     view.dragBy(deg(-200) / SPIN_PER_PIXEL, 0, RIGHT)
     await view.reset()
     expect(view.settled).toBe(true)
-    expect(quaternionToMat3(view.group.quaternion)).toEqual(IDENTITY)
+    expect(quaternionToMat3(view.group.quaternion)).toEqual(HOME)
   })
 })

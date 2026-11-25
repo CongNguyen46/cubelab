@@ -44,9 +44,9 @@ export const glowBlend = (dt: number) => 1 - Math.pow(0.002, dt)
  * not cube-local axes, so slice moves and whole-cube turns are handled for free.
  */
 export class GlowTracker {
-  /** Current face index, R L U D F B. Starts on green, the front. */
-  face = 4
-  readonly colour = new Color(FACE_COLOURS[4])
+  /** Current face index, R L U D F B. Starts on orange (L), the face toward the camera at home. */
+  face = 1
+  readonly colour = new Color(FACE_COLOURS[1])
   private readonly target = new Color()
   private readonly p = new Vector3()
   private readonly camDir = new Vector3()

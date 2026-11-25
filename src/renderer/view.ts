@@ -10,6 +10,16 @@ const UNIT: Readonly<Record<AxisKey, Vector3>> = {
   z: new Vector3(0, 0, 1),
 }
 
+/**
+ * The home view: white up, the orange (L) face toward the camera. A quarter turn about the vertical
+ * axis from the engine frame (white up, green front). It turns the view only; the engine frame
+ * never changes.
+ */
+export const HOME_VIEW: Readonly<Quaternion> = new Quaternion().setFromAxisAngle(
+  new Vector3(0, 1, 0),
+  Math.PI / 2,
+)
+
 /** Auto-spin speed in radians per second, as in the prototype. */
 export const AUTO_SPIN_SPEED = 0.35
 /** Radians of whole-cube turn per pixel dragged. */
@@ -62,6 +72,7 @@ export class ViewController {
   constructor(options: { reduceMotion?: () => boolean } = {}) {
     this.reduceMotion = options.reduceMotion ?? (() => false)
     this.autoSpin = !this.reduceMotion()
+    this.group.quaternion.copy(HOME_VIEW)
   }
 
   get spinning() {
@@ -93,11 +104,11 @@ export class ViewController {
     this.settle()
   }
 
-  /** Ease back to the starting view: white up, green front. Resolves once it is there. */
+  /** Ease back to the home view: white up, orange front. Resolves once it is there. */
   reset(): Promise<void> {
     this.autoSpin = false
     this.dragging = false
-    this.settleTarget = new Quaternion()
+    this.settleTarget = HOME_VIEW.clone()
     const settled = this.whenSettled()
     if (this.reduceMotion()) this.update(0)
     return settled

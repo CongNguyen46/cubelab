@@ -73,8 +73,9 @@
 /* Hero, menu and toast, ported from prototype/index.html. */
 @layer components {
   .hero {
-    --glow: #2fcf5a;
-    --neon-core: #bff5cf;
+    /* Orange (L) faces the camera at home, so the first frame is already orange. */
+    --glow: #ff8a1c;
+    --neon-core: #ffdacc;
     position: relative;
     display: flex;
     width: 100%;
