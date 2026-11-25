@@ -8,6 +8,8 @@ import { Menu, Toast } from './ui/Menu.tsx'
 import { MoveHistory } from './ui/MoveHistory.tsx'
 import { PillButton } from './ui/PillButton.tsx'
 import { usePlayStore, warmUpSolverWhenIdle } from './ui/playStore.ts'
+import { SessionPanel } from './ui/SessionPanel.tsx'
+import { useSessionStore } from './ui/sessionStore.ts'
 import { SolveButton } from './ui/SolveButton.tsx'
 import { ScrambleIcon, TimerIcon } from './ui/icons.tsx'
 import { useCubeKeys } from './ui/useCubeKeys.ts'
@@ -17,6 +19,7 @@ export function App() {
   useCubeKeys()
   useTimerKeys()
   useEffect(() => warmUpSolverWhenIdle(), [])
+  useEffect(() => useSessionStore.getState().start(), [])
 
   const mode = usePlayStore((s) => s.mode)
   const solvePhase = usePlayStore((s) => s.solvePhase)
@@ -72,6 +75,7 @@ export function App() {
           </PillButton>
         </div>
         <MoveHistory />
+        <SessionPanel />
       </main>
       <Menu />
       <Toast />
