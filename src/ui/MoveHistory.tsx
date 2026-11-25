@@ -18,7 +18,7 @@ export const CHIP =
   'w-[38px] shrink-0 rounded-lg border border-border bg-surface py-[7px] text-center font-mono text-sm leading-none font-medium'
 
 const iconButton =
-  'inline-grid size-11 cursor-pointer place-items-center rounded-xl border border-border bg-transparent text-text-subtle transition-[color,opacity] duration-200 ease-lab hover:text-text disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-text-subtle'
+  'inline-grid size-11 cursor-pointer place-items-center rounded-xl border border-border bg-transparent text-text-subtle transition-[color,opacity] duration-200 ease-lab hover:text-text disabled:cursor-not-allowed disabled:hover:text-text-subtle'
 
 /** The last few moves as chips (FR-1.6), with Undo (FR-1.5). Reset was removed by decision. */
 export function MoveHistory() {
@@ -66,7 +66,7 @@ export function MoveHistoryRow({ history, undoDisabled, onUndo }: RowProps) {
       {/* With no history Undo fades out but keeps its place, so nothing shifts. */}
       <button
         type="button"
-        className={`${iconButton} ${empty ? 'pointer-events-none opacity-0' : ''}`}
+        className={`${iconButton} ${empty ? 'pointer-events-none opacity-0' : 'disabled:opacity-40'}`}
         onClick={onUndo}
         disabled={empty || undoDisabled}
         aria-hidden={empty || undefined}
