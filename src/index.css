@@ -54,6 +54,12 @@
     overflow-x: clip;
   }
 
+  /* Double-clicks reset the view and buttons get tapped fast: never select their text. */
+  button {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
   :focus-visible {
     outline: 2px solid #fff;
     outline-offset: 3px;
@@ -81,6 +87,9 @@
     width: 100%;
     justify-content: center;
     isolation: isolate;
+    /* Double-click on the cube resets the view; it must not select text. */
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .hero-glow {

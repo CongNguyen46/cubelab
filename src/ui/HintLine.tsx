@@ -11,7 +11,7 @@ export function HintLine() {
   const line = usePlayStore((s) => s.line)
   const timerShown = useTimerStore((s) => isShown(s.timer))
   return (
-    <div className="mt-1 grid min-h-11 place-items-center">
+    <div className="mt-1 grid min-h-11 place-items-center select-none">
       {timerShown ? (
         <TimerDigits />
       ) : (
